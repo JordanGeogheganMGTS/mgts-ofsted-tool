@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duncan - MGTS Ofsted Evidence Builder</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const GRADE_LEVELS = [
+          "Urgent Improvement",
+          "Needs Attention", 
+          "Expected Standard",
+          "Strong Standard",
+          "Exceptional"
+        ];
+
+        // Ofsted Framework Structure (September 2025 Toolkit) - RESTRUCTURED
+        // Updated: 9 September 2025
+        // Structure: Each section has gatheringEvidence (what to collect evidence on) and gradeDescriptors (how to grade)
+        // Note: "Contribution to meeting skills needs" not included as it applies only to
+        // FE colleges, sixth form colleges, and designated institutions (not independent providers like MGTS)
+        const OFSTED_FRAMEWORK = {
+          safeguarding: {
+            title: "Safeguarding (Whole-Provider Level)",
+            type: "binary",
+            gatheringEvidence: [
+              {
+                area: "Safeguarding culture",
+                criteria: [
+                  "Leaders establish a culture in which staff, learners, apprentices, employers and parents feel comfortable raising and discussing concerns that relate to the safeguarding of learners and apprentices, and feel confident that appropriate action will be taken",
+                  "Leaders know and are assured that policies and procedures are understood and applied, and have a positive impact on learners and apprentices",
+                  "Learners and apprentices know who to go to for support",
+                  "Leaders have established purposeful and appropriate links with outside agencies to support the provider's safeguarding procedures and practice",
+                  "Leaders work productively with multi-agency partners to get learners and apprentices the support they need",
+                  "Leaders have developed a learning culture around safeguarding, which includes carefully reviewing safeguarding incidents to improve their practices in order to protect learners and apprentices effectively"
+                ]
+              },
+              {
+                area: "Safeguarding information for all staff to know and act on",
+                criteria: [
+                  "Leaders ensure that staff know, understand and uphold their safeguarding responsibilities, including their role in implementing the 'Prevent' duty to minimise the risk of learners and apprentices becoming radicalised",
+                  "The provider has policies and procedures for reporting safeguarding concerns about staff, peers or visitors, poor safeguarding practices, and whistle-blowing"
+                ]
+              },
+              {
+                area: "Management of safeguarding",
+                criteria: [
+                  "Leaders ensure that learners and apprentices are taught how to stay safe and keep others safe, including online, and are kept safe through appropriate filtering and monitoring systems",
+                  "There is an appropriate senior member, or members, of staff in the role of the designated safeguarding lead(s), or a nominated person, or persons, to carry out the statutory duties of this role",
+                  "Appropriate procedures are in place to protect learners and apprentices who are at greater risk of harm, including vulnerable adults"
+                ]
+              },
+              {
+                area: "Safer recruitment",
+                criteria: [
+                  "Leaders have received suitable training in, understand and follow safer recruitment practices",
+                  "Leaders know and understand the checks required for all staff and all other adults in the provider, including visitors, volunteers and contractors",
+                  "Leaders ensure that risk assessments are carried out and managed effectively",
+                  "Leaders understand and complete the required checks for all staff and all other adults, including visitors, volunteers and contractors",
+                  "Leaders obtain written confirmation that appropriate safeguarding checks have been carried out on staff working at any subcontracted provision used by the provider",
+                  "The single central record, where appropriate, indicates that all required pre-appointment and vetting checks have been made"
+                ]
+              },
+              {
+                area: "Safeguarding concerns or allegations",
+                criteria: [
+                  "Leaders have clear procedures in place to respond to a safeguarding allegation against a member of staff, visitor or other learners and apprentices, including the required processes for record-keeping (including for low-level concerns)",
+                  "Leaders recognise when they should work with outside agencies, including the local authority and the police, in response to an allegation against a member of staff, visitor or peer",
+                  "Leaders understand the harm threshold and apply this consistently to their response to any safeguarding allegation against a member of staff, including a supply teacher, volunteer, contractor or another learner or apprentice",
+                  "Leaders know the processes for making referrals to the Disclosure and Barring Service (DBS) and the Teaching Regulation Agency and follow these as required"
+                ]
+              },
+              {
+                area: "Child-on-child violence",
+                criteria: [
+                  "Leaders ensure that staff know and understand that early intervention is key to preventing harmful sexual behaviour from escalating, and the circumstances under which sexual harassment and sexual violence occur, including outside of the provider and online",
+                  "Leaders ensure that staff respond to all signs, reports and concerns about child-on-child violence, which can include bullying, physical abuse, sexual violence and harassment, and domestic abuse in intimate relationships of learners and apprentices",
+                  "Leaders have clear and effective systems for reporting incidents of sexual harassment and sexual violence, and sharing information and consulting with multi-agency safeguarding partners",
+                  "Leaders have appropriate risk assessments that are reviewed regularly",
+                  "Leaders give immediate consideration as to how best to support and protect the victim and the alleged perpetrator(s), and any other children involved or otherwise affected"
+                ]
+              }
+            ],
+            gradeDescriptors: {
+              "NOT MET": [
+                "Serious and/or widespread failures in safeguarding practice lead to learners and apprentices, or particular groups of these, being unsafe",
+                "Leaders have not taken sufficient action to resolve issues following a failure of safeguarding arrangements",
+                "Leaders are not open to challenge and/or do not learn from safeguarding issues or incidents",
+                "When learners or apprentices under 18 are absent, leaders are either not clear where they are or have not taken appropriate steps to check that they are safe",
+                "If learners aged 14 to 16 are on site, leaders are either not clear where the learners are when absent or are not able to demonstrate that they have taken steps to safeguard them",
+                "Leaders do not ensure that learners and apprentices are safe in work placements or contracted provision, and they do not respond promptly to concerns that are raised",
+                "Learners and apprentices do not know how to report issues, and/or do not trust that their safeguarding concerns will be acted on",
+                "Learners and apprentices have little confidence that the provider will tackle concerns about safety because leaders have not taken their views seriously and/or dealt with relevant concerns",
+                "Leaders do not fulfil their responsibilities in relation to child-on-child violence or do not handle allegations of abuse swiftly and appropriately",
+                "Leaders do not fulfil their responsibilities in relation to safer recruitment, reporting, referrals, record-keeping and the 'Prevent' duty",
+                "Leaders do not manage safeguarding concerns or allegations made about staff, other adults or peers appropriately",
+                "Leaders do not follow local authority procedures in managing safeguarding concerns or allegations about staff. The provider does not fulfil its duty to refer allegations or concerns to the DBS",
+                "Leaders have not ensured that staff have appropriate safeguarding training, which is likely to put learners and apprentices at risk of significant harm"
+              ],
+              "MET": [
+                "Leaders and those responsible for governance have established an open culture in which safeguarding is everyone's responsibility",
+                "Learners and apprentices are kept safe and feel safe, including those who are not on the provider's site. They know how to report safeguarding incidents and trust that leaders will address them",
+                "The provider works effectively with its multi-agency partners. Leaders have strategic oversight of all aspects of safeguarding and promoting the welfare of learners and apprentices of all ages",
+                "Learners' and apprentices' voices are heard. They are informed of the safeguarding support available",
+                "Teaching learners and apprentices in an age-appropriate way about how they can stay safe and when they may need help is embedded within the curriculum",
+                "Learners and apprentices, parents, employers and other stakeholders know who to go to for support",
+                "All staff are vigilant and carry out their responsibilities effectively to keep learners and apprentices safe",
+                "Staff understand signs of possible safeguarding concerns and respond by following the provider's systems confidently and consistently",
+                "Leaders and those responsible for safeguarding fulfil their responsibilities in relation to child-on-child violence",
+                "Leaders, staff and those responsible for governance know and fulfil the relevant statutory requirements for safeguarding, including managing safer recruitment, reporting, referrals, record-keeping and the 'Prevent' duty",
+                "The provider has clear and accessible policies and procedures that help to keep learners and apprentices safe and reflect current statutory guidance",
+                "Leaders keep learners and apprentices safe from the dangers of radicalisation and extremism in accordance with the 'Prevent' duty",
+                "Leaders are receptive to challenge and are reflective about their practices. This means that the impact of safeguarding policies, systems and processes is continually monitored",
+                "Leaders ensure that staff are appropriately supervised, supported and monitored. Where the conduct and behaviour of staff are not appropriate, leaders take action",
+                "Leaders follow local authority procedures in managing safeguarding concerns and allegations about staff. They fulfil their duty to refer allegations or concerns to the DBS. Where required, there is evidence of a referral to DBS",
+                "Leaders have resolved any minor safeguarding incidents identified during the inspection or are taking steps to resolve them",
+                "Leaders ensure that staff carry out appropriate safeguarding training that is relevant to their roles and reflective of changes to current statutory duties"
+              ]
+            }
+          },
+          inclusion: {
+            title: "Inclusion (Whole-Provider Level)",
+            type: "graded",
+            grades: GRADE_LEVELS,
+            gatheringEvidence: [
+              {
+                area: "Identifying and assessing needs, and reducing barriers",
+                criteria: [
+                  "Leaders have established a culture in which staff understand the range of barriers that learners and apprentices may face to their learning and/or well-being, including those specific to their community and context; they work quickly and accurately to identify learners and apprentices who are facing those barriers",
+                  "Leaders make sure learners and apprentices receive effective support, consult with external specialists and implement their advice as necessary, and ensure that appropriate reasonable adjustments are made in accordance with the Equality Act 2010 and the SEND code of Practice",
+                  "Leaders ensure that any accessibility planning meets the requirements of the Equality Act 2010, and is implemented effectively and reviewed regularly",
+                  "Leaders make sure that the use of any alternative settings is suitable, safe and in learners'/apprentices' best interests"
+                ]
+              },
+              {
+                area: "Supporting disadvantaged learners and apprentices",
+                criteria: [
+                  "Leaders have a secure understanding of their disadvantaged learners' and apprentices' needs and use appropriate evidence to inform their approaches to addressing these",
+                  "Leaders make sure that the delivery of their inclusion strategy, and any associated strategies and policies, is sustained and monitored effectively, including through training and support for staff",
+                  "Leaders continually monitor the impact of their approaches, including their inclusion strategy and any associated strategies and policies, and make helpful and proactive adaptations as appropriate",
+                  "Leaders ensure that their approaches, including those to their inclusion strategy and any associated strategies and policies, have a positive impact on learners' and apprentices' achievement and/or well-being"
+                ]
+              },
+              {
+                area: "Supporting learners and apprentices with SEND and high needs",
+                criteria: [
+                  "Leaders have an appropriately experienced leader who ensures that the provider's support is effective in making a positive difference for learners and apprentices with SEND and those who receive high needs funding, and draws on specialists where necessary",
+                  "Leaders identify learners' and apprentices' emerging and changing needs quickly and accurately",
+                  "Leaders ensure that the 'graduated approach' (a continuous cycle of 'assess, plan, do and review') is used in a way that is effective in meeting learners' and apprentices' needs, and that staff receive suitable training and support to implement it successfully",
+                  "Leaders ensure that their work improves the progress and achievement of learners and apprentices with SEND, and that they do not lower their expectations of them",
+                  "Leaders are committed to and understand their role in the local area partnership's strategy to improve the experiences of, and outcomes for, learners and apprentices with SEND and those who receive high needs funding; where appropriate, leaders ensure that the local partnership's strategies have a positive impact on learners and apprentices at the provider",
+                  "Leaders meet the needs of learners and apprentices with SEND, making reasonable adjustments to the environment and the provider's wider offer, which help to ensure that these learners and apprentices access education and training"
+                ]
+              },
+              {
+                area: "Supporting learners and apprentices who are known (or previously known) to social care",
+                criteria: [
+                  "Leaders ensure that an appropriately experienced staff member has been designated to support learners and apprentices who are looked-after children",
+                  "Leaders ensure that learners and apprentices who are looked-after children have a personal education plan and high-quality support to improve their progress and achievement",
+                  "The designated safeguarding lead and other leaders use their knowledge of the learner/apprentice to inform decisions about promoting their welfare, such as providing additional academic support or supporting them to maintain their well-being",
+                  "Leaders share information with the local authority, including for statutory assessments of learners' and apprentices' social care needs",
+                  "Leaders work with social workers, personal advisers and other professionals to provide effective multi-agency planning and support for learners and apprentices"
+                ]
+              },
+              {
+                area: "Supporting learners and apprentices who face barriers to their learning and/or well-being",
+                criteria: [
+                  "Leaders are alert to learners' and apprentices' emerging and changing needs and can quickly identify those who are at risk of not attending or engaging in their learning programmes as result of a change in their circumstances and/or those whose well-being is deteriorating",
+                  "Leaders sensitively approach learners and apprentices to offer support to ensure that they can continue with their learning programme(s) and maintain their well-being",
+                  "Leaders are knowledgeable and well informed about issues in their communities that might affect learners' and apprentices' well-being",
+                  "Leaders have access to specialist organisations that support them in reducing barriers that learners and apprentices face, and work with those organisations where appropriate"
+                ]
+              }
+            ],
+            gradeDescriptors: {
+              "Urgent Improvement": [
+                "Leaders do not identify and assess learners' and apprentices' needs effectively, and/or this identification and assessment do not have a meaningful impact on the provision for learners and apprentices",
+                "Leaders do not take into account the needs of their learners and apprentices, or of one or more groups of learners and/or apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                "Leaders are not using dedicated funding to support the learners and apprentices it is intended for",
+                "Leaders do not meet statutory requirements for learners and apprentices who receive high needs funding, and this has a significantly negative impact on learners' and apprentices' learning and/or well-being and planned achievement"
+              ],
+              "Needs Attention": [
+                "Leaders have only recently started to take appropriate action to identify and assess learners' and apprentices' needs and to reduce barriers to their learning and/or well-being",
+                "Inconsistent practices have a negative impact on a particular group of learners or apprentices",
+                "Leaders' actions, including, for example, the use of high needs funding to support learners and apprentices, do not have the positive impact that leaders intend",
+                "Leaders have not ensured that staff receive the necessary training required to help them to identify and support the needs of learners and apprentices well",
+                "Leaders understand the needs of learners and apprentices but do not share well enough this information with staff at relevant subcontracted provision or work and community placements, and/or do not monitor closely enough the support they receive. This has a negative impact on these learners and apprentices"
+              ],
+              "Expected Standard": [
+                "Leaders and staff establish a culture in which learners' and apprentices' needs are met and learners and apprentices are welcome and, in most cases, feel supported to fulfil their potential, whatever their particular needs",
+                "Leaders and staff quickly and accurately identify learners' and apprentices' learning and support needs. When these emerge or change, staff adapt programmes and provide suitable support in order to meet the needs of learners and apprentices",
+                "Leaders take an appropriate 'graduated' approach (a continuous cycle of 'assess, plan, do and review') which generally meets learners' and apprentices' needs well. Staff receive suitable training and support to implement this approach",
+                "Where learners and apprentices face barriers to their learning and/or well-being, leaders take appropriate action for the period of need and do not reduce their high expectations of those learners/apprentices",
+                "Where the provider has a leader responsible for learners and apprentices with SEND, they are qualified and experienced and exercise sufficient leadership to make a positive difference for those learners and apprentices",
+                "Leaders take the necessary steps to make sure that any use of alternative settings, such as work-experience placements and subcontracted locations, is suitable and meets the needs of learners and apprentices",
+                "The designated teacher and/or responsible person works with leaders and other staff to ensure that the personal education plans of care-experienced learners and apprentices help to improve their learning and/or well-being",
+                "Where relevant, leaders understand and perform their role in the local area partnership's strategy to improve the experiences and opportunities that learners and apprentices with high needs and SEND receive",
+                "Leaders consistently identify when additional learning support is no longer required or can be reduced, so learners and apprentices are well prepared to become more independent and to move on to the next stage of their learning and employment"
+              ],
+              "Strong Standard": [
+                "Leaders and staff establish strategies that consistently enhance the opportunities and experiences of all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                "Leaders ensure that the barriers to learners' and apprentices' learning are reduced swiftly and consistently. They systematically review and adapt any support offered in a way that makes a significant difference to learners' and apprentices' experiences and opportunities",
+                "Leaders carefully monitor the progress of all learners and apprentices, in particular those groups listed above. Leaders make good use of data to understand the needs of their learners and apprentices",
+                "Leaders' work on inclusion is embedded in their organisational culture and practices and has a significant and consistent impact on learners' and apprentices' opportunities and experiences",
+                "Leaders make proactive and evidence-informed adaptations to their inclusion strategy, as appropriate, which have a consistently positive impact on these learners' and apprentices' education"
+              ],
+              "Exceptional": [
+                "Exceptional standards of inclusion have been sustained over time so that barriers to learning and/or well-being for all learners and apprentices are reduced exceptionally well to ensure highly positive outcomes and experiences, in particular for those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                "Leaders' actions have a transformational impact on how well all learners achieve and thrive and feel that they belong",
+                "There are no significant areas for improvement that leaders have not already prioritised"
+              ]
+            }
+          },
+          leadership: {
+            title: "Leadership and Governance (Whole-Provider Level)",
+            type: "graded",
+            grades: GRADE_LEVELS,
+            gatheringEvidence: [
+              {
+                area: "Strategic leadership",
+                criteria: [
+                  "Leaders have devised and are enacting a clear and ambitious vision, grounded in accurate self-evaluation and aligned to the needs of learners, apprentices and employers, and regional skills priorities",
+                  "Leaders make decisions in the best interests of all learners and apprentices, prioritising their experiences, in particular of those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                  "Leaders take a strategic approach to improving the provision, identifying the correct priorities to ensure the best possible outcomes and experiences for learners and apprentices, and drawing on the best available evidence",
+                  "Leaders forge partnerships with stakeholders, local authorities and devolved agencies to inform their planning and enhance opportunities for learners and apprentices",
+                  "Leaders tailor their approach to the context of the provider",
+                  "Leaders allocate staffing, funding and professional learning and expertise effectively to build and sustain expertise for all provision types",
+                  "Leaders ensure appropriate quality across all provision models, including subcontractors, different provider sites, and courses taught online and in person"
+                ]
+              },
+              {
+                area: "Governance",
+                criteria: [
+                  "Governors and/or those responsible for oversight are knowledgeable about their statutory duties and carry them out effectively",
+                  "Governors and/or those responsible for oversight are strategic and select the most appropriate methods to assure themselves about the quality of provision, the impact of improvement actions, and the quality of the learner experience, so that learners and apprentices thrive and feel that they belong",
+                  "Governors and/or those responsible for oversight provide support and challenge to leaders and hold them to account for learners' and apprentices' progress and achievement; this includes all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                  "Governors and/or those responsible for oversight understand their role in monitoring leaders' workload and well-being, and addressing any issues as appropriate",
+                  "Governors and/or those responsible for oversight maintain suitable oversight of subcontracted provision"
+                ]
+              },
+              {
+                area: "Staff well-being and workload",
+                criteria: [
+                  "Leaders take action to ensure that staff's well-being is monitored and their workload is manageable",
+                  "Leaders do not create unnecessary burdens",
+                  "Leaders protect staff from bullying, unlawful discrimination, harassment and victimisation",
+                  "Leaders make sure that all staff feel valued and are supported to do their jobs to a high standard, ensuring that their time is used as effectively as possible to secure the best outcomes for learners and apprentices"
+                ]
+              },
+              {
+                area: "Professional learning and expertise",
+                criteria: [
+                  "Leaders establish a culture of continuous improvement, pursuing their own professional learning and expertise and acting as role models for staff",
+                  "The provider's professional learning and expertise programme enables staff to meet the demands of each subject/specialist curriculum, including staff who teach outside their subject specialism, and/or to develop the knowledge and skills to teach at a higher level in their subject specialism",
+                  "The provider's professional learning and expertise programme enables staff to implement appropriate strategies, reasonable adjustments and adaptations to support the needs of all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                  "The provider's professional learning and expertise programme enables staff to fulfil the provider's expectations of the participation and development of learners and apprentices",
+                  "Leaders provide effective support and development for staff who are new to teaching and those intending to progress in their careers",
+                  "Staff continually seek to improve their expertise and maintain a high level of vocational or technical knowledge, drawing on appropriate evidence, the practice of others, links with employers, and other relevant stakeholders and coaching, and are largely successful in doing so"
+                ]
+              },
+              {
+                area: "Stakeholder engagement",
+                criteria: [
+                  "Leaders engage with stakeholders including, as appropriate, employers, community groups, parents and subcontractors, supporting learners' and apprentices' education and training",
+                  "Leaders have a thorough understanding of potential barriers to high-quality engagement and work effectively to overcome these",
+                  "Leaders work effectively with stakeholders, local authorities and devolved agencies in a climate of mutual challenge and support"
+                ]
+              }
+            ],
+            gradeDescriptors: {
+              "Urgent Improvement": [
+                "Leaders do not identify and/or prioritise the right issues, or they take very limited action to deal with these, in directly offered and/or subcontracted provision. Any actions they have taken have had little or no impact on learners'/apprentices' experiences",
+                "Leaders do not have a track record of improvement at the provider or, since being appointed, have not made anything other than minimal improvements",
+                "Where an employer, local authority or governing body (the responsible body) has statutory duties for leaders' well-being, it does not fulfil these duties. Leaders are not supported",
+                "Leaders make poor decisions, which have a negative impact on learners and apprentices. These might include, but are not limited to, falsification of records, inappropriate use of subcontracting, or use of unsafe premises",
+                "Leaders impose unsustainable workloads on staff, which undermine morale and performance",
+                "Bullying and harassment go unnoticed or unchallenged",
+                "Professional learning and expertise programmes have little or no impact on improving the quality of curriculum or on teaching and training"
+              ],
+              "Needs Attention": [
+                "Leaders broadly understand the context in which they work, but their analysis of the provision's strengths and/or areas for development lacks precision, and/or does not identify the root causes of the latter and find ways to mitigate these",
+                "Leaders demonstrate the capacity to improve, are taking actions to bring about change and are largely focused on the right areas, but their work is not leading to sustainable improvements for learners and apprentices at a swift enough pace",
+                "Governors and/or those responsible for oversight, while supportive of the provider's ambitions and vision, are inconsistent in the support and/or challenge they provide. Their approaches to assuring themselves of the impact of leaders' work lack precision",
+                "Leaders' engagement with relevant stakeholders is limited and/or not targeted appropriately. It makes a minimal difference to learners' and apprentices' experiences, success or well-being",
+                "Leaders are conscious of staff workload, but do not do enough to manage it or to avoid unnecessary burdens",
+                "Leaders have a programme of professional learning and expertise for staff, but it is overly generic or not well enough targeted, which limits its impact on the quality of the curriculum, teaching and training that learners and apprentices receive",
+                "Leaders do not maintain thorough oversight of subcontracted delivery, resulting in poor-quality provision and experiences for learners and apprentices",
+                "Leaders' use of subcontracted provision does not result in the outcomes and experiences that they intend"
+              ],
+              "Expected Standard": [
+                "Leaders understand the provider's strengths and areas for development. They largely take appropriate action to drive improvement and/or sustain high standards. Where an aspect of the provision falls short of the expected standard, this is dealt with quickly and effectively",
+                "Governors and/or those responsible for oversight make sure that leaders have a clear vision and strategy and manage resources well. They support and challenge leaders appropriately, giving due regard to their well-being and workload",
+                "Leaders, governors and/or those responsible for oversight make decisions that are in the best interests of learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                "Governors and/or those responsible for oversight have a generally accurate understanding of the quality of the curriculum, teaching and training, including any subcontracted provision. They work with leaders to monitor and refine actions they have taken to make improvements",
+                "Leaders ensure that staff feel valued. They consider the well-being of staff and make sure workloads are manageable. They avoid creating unnecessary burdens. Leaders protect staff from bullying, unlawful discrimination, harassment and victimisation",
+                "Leaders and staff collaborate with stakeholders to help enhance learners' and apprentices' experiences and/or to maintain their well-being",
+                "Leaders ensure that programmes of professional learning and expertise are generally well planned and implemented and meets the needs of staff",
+                "Leaders largely monitor the quality of subcontracted provision carefully to ensure that the courses offered meet the intended curriculum standards. They hold subcontractors to account for any weak performance"
+              ],
+              "Strong Standard": [
+                "Leaders, governors and/or those responsible for oversight have a detailed insight into the provider's strengths and areas for development. This ensures that their strategic priorities are sharply focused, and that any remedial actions they take have a sustained impact on the quality of provision for learners and apprentices",
+                "Leaders are tenacious in their pursuit of high standards across the provision. Their excellent insight into what constitutes high-quality teaching and their high expectations of all learners and apprentices are evident across all aspects of the provision",
+                "Leaders and staff understand and are committed to their role in improving standards. They make a consistently positive contribution to sustaining and improving the quality of provision",
+                "Leaders and staff forge and maintain lasting partnerships with key stakeholders, which significantly enrich learners' and apprentices' experiences, promoting their well-being and maximising their chances of success",
+                "Staff benefit consistently from highly tailored and focused programmes of professional learning and expertise that allow them to develop their industry and pedagogical knowledge and skills to a high standard. A culture of continuous improvement is embedded across the provision",
+                "Leaders secure and maintain a consistently high standard of the curriculum, teaching and training across all provision, including that which is subcontracted"
+              ],
+              "Exceptional": [
+                "Exceptionally high standards of leadership and governance have been sustained. Governors and/or those responsible for oversight, other leaders at all levels, and all staff make a strong, positive contribution to the provider's strategic priorities, leading to continued improvement and/or sustained high standards in all areas of the provider's work",
+                "Leaders' actions have a transformational impact on the progress, development and well-being of all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                "There are no significant areas for improvement that leaders have not already prioritised"
+              ]
+            }
+          },
+          curriculum: {
+            title: "Curriculum, Teaching and Training (Provision Type Level)",
+            type: "graded",
+            grades: GRADE_LEVELS,
+            gatheringEvidence: [
+              {
+                area: "The leadership of the curriculum, teaching and training",
+                criteria: [
+                  "Leaders have a comprehensive understanding of the curriculum and the quality of teaching and training for the provision type",
+                  "Leaders assure themselves that the curriculum is being taught well",
+                  "Leaders identify priorities for improvement and take effective and timely action to address these"
+                ]
+              },
+              {
+                area: "Curriculum design to ensure that learners gain the knowledge, skills and behaviours to be successful now and in the future",
+                criteria: [
+                  "Leaders construct a curriculum that is ambitious and designed and sequenced appropriately",
+                  "Leaders construct a curriculum that reflects the needs of the local, regional and national context",
+                  "Leaders construct a curriculum that prepares learners and apprentices with the knowledge, skills and professional behaviours needed for their next steps",
+                  "Leaders construct a curriculum that allows enough time for teaching and training, practising and revisiting content, and addressing any gaps in learners' and apprentices' knowledge",
+                  "Leaders construct a curriculum that includes employers (where relevant) in the design of the curriculum",
+                  "Leaders construct a curriculum that includes (where relevant) work experience, work or industry placements, and/or work-related learning to enhance the curriculum"
+                ]
+              },
+              {
+                area: "High-quality teaching, training and learning",
+                criteria: [
+                  "Trainers and teaching staff are subject experts and (where relevant) have current industry experience and expertise",
+                  "Trainers and teaching staff communicate and explain up-to-date vocational, academic and technical subject knowledge that (where relevant) reflects expected industry practice and meets employers' needs",
+                  "Trainers and teaching staff plan learning logically and systematically, sequencing content so that new concepts build on prior learning, and long-term retention of key knowledge is supported",
+                  "Trainers and teaching staff select the most appropriate teaching and training strategies to maintain learners' and apprentices' interest, explain new ideas in ways that learners and apprentices understand, build on their prior knowledge, and maximise learning",
+                  "Trainers and teaching staff allow time for learners and apprentices to practise and consolidate their learning",
+                  "Trainers and teaching staff use assessment to check learners' and apprentices' understanding, development and progress",
+                  "Trainers and teaching staff recognise and record learners' and apprentices' progress and achievement accurately, taking into account their starting points"
+                ]
+              },
+              {
+                area: "Inclusive curriculum, teaching and training practices",
+                criteria: [
+                  "Leaders ensure that teachers and trainers know how to reduce barriers to learning and promote the well-being of the learners who they teach",
+                  "Leaders ensure that teachers and trainers draw on appropriate evidence to adapt the teaching and training of the curriculum for all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                  "Leaders ensure that teachers and trainers, where appropriate, collaborate with external specialists, employers and families to design and make reasonable adjustments or adaptations to the curriculum and to support learners and apprentices to progress to the next stages of education, employment and/or training"
+                ]
+              }
+            ],
+            gradeDescriptors: {
+              "Urgent Improvement": [
+                "The curriculum lacks ambition, structure and coherence. Leaders have not considered the curriculum content sufficiently",
+                "Leaders lack an accurate understanding of the quality of teaching, training and learning",
+                "Leaders fail to tackle weaknesses in the education or training that learners and apprentices receive",
+                "Teachers' and trainers' expectations of all learners and apprentices, or of specific groups, are too low",
+                "Weak assessment practice means that the teaching and training fail to ensure that learners and apprentices achieve as well as they should",
+                "Leaders and staff do not identify learners' and apprentices' specific and individual needs or make appropriate reasonable adjustments or adaptations to meet them adequately. Learners and apprentices with specific needs may include those who are disadvantaged, those with SEND, those with high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics",
+                "The principles and requirements of the 16-to-19 study programme are not met",
+                "Statutory curriculum requirements for full-time 14-16-year olds are not met",
+                "While planning their curriculum for adult learning programmes, leaders have not considered the priorities set by the funding authority",
+                "In apprenticeship providers, staff do not sufficiently consider the principles and requirements of an apprenticeship",
+                "Learners and apprentices with high needs do not receive the specialist support they need and/or reasonable adjustments are not being made for them"
+              ],
+              "Needs Attention": [
+                "Leaders have an overly generic or superficial understanding of the quality of the curriculum and teaching and training. Consequently, actions to address any concerns are not well enough targeted and/or have limited or inconsistent impact on learners and apprentices",
+                "Leaders' actions to strengthen the curriculum, teaching and training are at too early a stage of development to see the impact on learners' and apprentices' experiences",
+                "Although leaders understand the principles of effective curriculum planning, the quality of their planning is variable. Curriculums may not be fully matched to the knowledge, skills and behaviours that learners and apprentices need, and/or there may be too little time allowed to revisit or practise important topics or skills. Learners and apprentices do not follow a curriculum designed around ambitious outcomes and experiences",
+                "Assessment is not sufficiently thorough and/or accurate. Teachers and trainers do not identify learners and apprentices who are struggling to access their learning and support them",
+                "Leaders do not routinely make sure that the curriculum is accessible for all groups of learners and apprentices, such as those who are disadvantaged, those with SEND, those with high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics. The reasonable adjustments or adaptations they make do not meet these learners' and apprentices' needs well",
+                "The quality of teaching and training does not meet the 'expected standard'. Teachers do not explain vocational, academic and technical subject knowledge well enough, and they do not use training activities and resources effectively",
+                "In adult learning programmes, leaders do not ensure that curriculums help adult learners to develop the personal, social and employability skills they need to succeed",
+                "Leaders understand the principles and requirements of apprenticeships, but they do not ensure that they are routinely fully met",
+                "In apprenticeships, staff do not ensure that the collaboration with employers to plan on- and off-the-job training is effective enough and/or does not provide the support that apprentices need",
+                "While leaders understand the importance of the curriculum for preparing learners well for their next steps and the importance of effective support arrangements, learners with high needs are not sufficiently prepared for their next steps, and/or specialist support is inconsistent"
+              ],
+              "Expected Standard": [
+                "Leaders typically have an accurate understanding of the quality of the curriculum, teaching, and training. When necessary, they address any areas of concern in a timely and effective way",
+                "Leaders have largely ensured that the curriculum is well sequenced and builds on what has already been taught and learned. This equips learners and apprentices with the essential knowledge, skills and behaviours that they need to achieve well, and prepares them well for their next steps",
+                "Learners and apprentices follow a curriculum designed around well-planned outcomes and experiences, such as those in their EHC plans or individual learning plans",
+                "Leaders make sure that the curriculum is, in the main, relevant to local, regional and national employment and training priorities",
+                "Leaders ensure that the curriculum is accessible, allowing learners and apprentices, including those who are disadvantaged, those with SEND, those with high needs, those who are known (or previously known) to social care, or those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics, to participate in learning and study the intended curriculum",
+                "Leaders ensure that teachers and trainers have the knowledge, skills and resources they need to teach learners and apprentices. They are supporting them to quickly gain the relevant expertise and knowledge, where they do not have these, through professional learning and expertise",
+                "Learners and apprentices are taught well. Teachers use appropriate strategies to help them understand and remember what they have learned",
+                "Teachers and trainers mostly ensure that enough planned time is built into the curriculum to teach, practise, assess and close any gaps in learners' and apprentices' knowledge, skills and behaviours",
+                "Teachers and trainers largely have the expertise to prioritise and teach the vocabulary, both spoken and written, required for the specific courses/subjects that they teach",
+                "Teachers and trainers largely use assessment well to provide constructive feedback to learners and apprentices, and to refine their approach to teaching and training",
+                "Teachers and trainers generally explain vocational, academic and technical subject knowledge well. They select appropriate teaching and training activities and resources to support learners' and apprentices' development of new knowledge, skills and behaviours",
+                "Leaders ensure that 16-to-19 study programmes meet the principles and requirements",
+                "Leaders ensure that the curriculum for full-time 14-to-16-year olds meets statutory requirements",
+                "In adult learning programmes, the curriculum is aligned to the funding authority, employer and stakeholder needs, and the relevant local, regional and national priorities. The curriculum is planned and tailored to help adult learners develop the personal, social and employability skills that they need to succeed",
+                "Leaders ensure that the principles and requirements of apprenticeships are met. Staff and employers co-plan and implement on- and off-the-job training so that apprentices can apply and practise newly taught knowledge, skills and behaviours at work",
+                "In provision for learners with high needs, learners follow tailored programmes that meet their individual needs. Teachers and trainers collaborate with external partners so that learners are well prepared for their next steps in learning, training or employment"
+              ],
+              "Strong Standard": [
+                "Leaders have developed a consistently high-quality curriculum, with expert teaching and training across all courses and delivery models. Decisions about what to teach, when and how are highly effective and tailored to the context of the provision, the course type and learner needs",
+                "The curriculum is regularly updated to support each learner and apprentice, based on their needs and goals. Teachers and trainers help them build the key knowledge, skills and behaviours they need to succeed. The curriculum offers significant, meaningful additional learning opportunities and goes beyond the planned outcomes",
+                "Teachers and trainers skilfully teach difficult and/or complex topics to learners and apprentices, connecting new ideas with existing knowledge so that they can grasp, retain and apply that knowledge automatically and confidently",
+                "In the 16-to-19 study programme, leaders ensure that the curriculum, teaching and training are of high quality. Teachers choose highly effective activities and tasks that meet subject and learner needs. As a result, learners and apprentices excel, including those who are disadvantaged, those with SEND, those with high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics",
+                "In adult learning programmes, leaders ensure that the curriculum, teaching and training are of consistently high quality. The curriculum meets employers' and stakeholders' needs and the relevant local, regional and national priorities consistently well. As a result, adult learners excel in the development of personal, social and employability skills",
+                "In apprenticeships, staff work closely with employers to plan and implement on- and off-the-job training seamlessly, so that apprentices can practise and master their skills consistently well",
+                "Disadvantaged learners and apprentices and those groups listed above receive high-quality, tailored support. This ensures that they can access and succeed across the full curriculum. Leaders coordinate specialist support, enabling these learners and apprentices to thrive",
+                "Learners with high needs follow programmes that meet their individual needs consistently well. Teachers and trainers collaborate with a wide range of appropriate specialists so that learners are consistently well prepared for their next steps in learning, training or employment"
+              ],
+              "Exceptional": [
+                "Leaders inspire and motivate staff to design and teach an exceptionally high-quality curriculum that inspires learners and apprentices, and promotes their interest and engagement. Teaching and training across all programmes and learning environments enable learners and apprentices to master the knowledge, skills and behaviours that they require",
+                "Leaders' actions have a transformational impact on the learning of all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics. As a result, learners and apprentices are exceptionally well prepared for current and later learning, and for the next steps in their education, employment and/or training",
+                "There are no significant areas for improvement that leaders have not already prioritised"
+              ]
+            }
+          },
+          achievement: {
+            title: "Achievement (Provision Type Level)",
+            type: "graded",
+            grades: GRADE_LEVELS,
+            gatheringEvidence: [
+              {
+                area: "Inclusive achievement: attainment and progress",
+                criteria: [
+                  "Leaders enable learners and apprentices to make substantial and sustained progress from their starting points",
+                  "Leaders create an environment that supports learners and apprentices to meet their individual learning goals and achieve their qualifications",
+                  "Leaders improve and sustain qualification achievement for learners and apprentices",
+                  "Leaders reduce barriers to achievement so that disadvantaged learners and apprentices achieve planned outcomes; these include those with SEND, those with high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics",
+                  "Leaders check learners' and apprentices' progress towards their individual learning goals and qualifications",
+                  "Leaders enable learners and apprentices with SEND and/or high needs to develop the knowledge, skills and behaviours they need for success in education, work and independent living, including, where relevant, ambitious outcomes such as those in their EHC plans"
+                ]
+              },
+              {
+                area: "Inclusive achievement: progress through the curriculum",
+                criteria: [
+                  "Leaders enable learners and apprentices to gain the knowledge, skills and professional behaviours outlined in the planned curriculum",
+                  "Leaders enable learners and apprentices to produce work that consistently meets or exceeds the requirements of their qualifications, individual learning goals and/or industry standards",
+                  "Leaders support learners and apprentices to gain the relevant English, mathematics and digital skills they need for their studies and future progression"
+                ]
+              },
+              {
+                area: "Preparation for next steps and positive destinations",
+                criteria: [
+                  "Leaders ensure that learners and apprentices acquire the qualifications, skills and knowledge they need for success in future study, work and, where applicable, in the community",
+                  "Leaders ensure that learners and apprentices are fully prepared for their next stage, helping them to avoid being NEET",
+                  "Leaders support learners' and apprentices' progression to positive destinations linked to their studies",
+                  "Leaders provide appropriate support to ensure that learners and apprentices have equal opportunities to succeed, including those with SEND or high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics"
+                ]
+              }
+            ],
+            gradeDescriptors: {
+              "Urgent Improvement": [
+                "Learners and apprentices do not develop the expected knowledge, skills and behaviours, in particular learners and apprentices who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics. As a result, they make very slow or minimal progress and produce poor-quality work",
+                "Achievement rates for learners, apprentices and adults (as applicable) are consistently very low and show little improvement",
+                "Learners and apprentices make insufficient progress on their programmes of study and apprenticeships. They cannot progress in their courses and qualifications because they do not gain the necessary English, mathematical or digital skills",
+                "Learners with high needs make very limited or no progress towards their planned outcomes. The support provided is not effective in helping them achieve these goals",
+                "Adult learners and apprentices fail to develop the personal, social and employability skills they need to progress. As a result, they are poorly prepared for future employment and/or further learning"
+              ],
+              "Needs Attention": [
+                "Learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics, make slow progress from their starting points and/or do not typically achieve well. Achievement rates are too low or are declining",
+                "Learners and apprentices do not securely develop the knowledge, skills and behaviours they need to achieve the aims of the curriculum. There are gaps in their knowledge, and they lack the confidence to apply what they have learned",
+                "Learners and apprentices do not consistently produce work in line with the standard expected for their level of study",
+                "Learners and apprentices do not develop English, mathematical and digital skills well enough for their learning goals or qualification",
+                "Due to gaps in their knowledge, skills and behaviours, learners and apprentices are not equipped to progress to high-quality destinations that meet their interests, career goals and aspirations",
+                "Too few 16-to-19 study programme learners who re-sit examinations in English and/or mathematics improve their qualification grades",
+                "Learners with high needs make poor progress towards their planned outcomes",
+                "Adult learners too often do not achieve their personal targets and goals, and they do not make the progress planned for them"
+              ],
+              "Expected Standard": [
+                "Learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics, typically make appropriate progress from their starting points and/or achieve well. They largely achieve relevant standards and qualifications within the anticipated timeframe",
+                "Learners and apprentices generally develop the intended new knowledge, skills and behaviours, as they progress through the curriculum, and they can apply these effectively. They produce work of the standard expected for the level of course they are studying",
+                "Learners and apprentices broadly develop the English, mathematical and digital skills they need to study the curriculum and achieve their learning goals, including making progress towards level 2 mathematics and English qualifications",
+                "Learners and apprentices are usually ready for the next stage of education, employment or training, and/or for greater independence in the community. They mostly go on to destinations that reflect their interests and meet their career goals and aspirations",
+                "Learners on 16-to-19 study programme who take level 2 qualifications in English and mathematics typically make positive progress in English and mathematical knowledge, skills and behaviours, compared to their starting points",
+                "Learners with high needs typically make at least the planned progress towards ambitious outcomes, such as those identified in their EHC plans",
+                "Adult learners achieve the personal targets and goals set for them to help them build confidence and/or improve their health and well-being, prepare for further learning or employment, improve essential skills, develop stronger communities, and equip them as parents to support their children's learning"
+              ],
+              "Strong Standard": [
+                "Learners and apprentices consistently make extensive progress from their starting points and/or achieve well. Achievement rates, where applicable, are high or have improved significantly, especially for disadvantaged learners and apprentices, those with SEND, those with high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics",
+                "Learners and apprentices develop a thorough and secure understanding of new concepts. They apply their extensive academic, technical or vocational knowledge, skills and behaviours expertly, fluently and automatically",
+                "Learners and apprentices produce theoretical and practical work that is of a consistently high standard",
+                "Through the knowledge, skills and behaviours gained, learners and apprentices are very well prepared for advanced study or further training/employment",
+                "Adult learners make extensive progress from their starting points and consistently achieve ambitious personal learning targets and goals"
+              ],
+              "Exceptional": [
+                "All learners and apprentices develop exceptionally high levels of subject knowledge and skill in relation to their starting points, in particular learners and apprentices who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics. This is demonstrated in the theoretical and practical work they produce",
+                "Leaders' actions have a transformational impact on the readiness of learners and apprentices for their future careers, study pathways or greater independence",
+                "There are no significant areas for improvement that leaders have not already prioritised"
+              ]
+            }
+          },
+          participation: {
+            title: "Participation and Development (Provision Type Level)",
+            type: "graded",
+            grades: GRADE_LEVELS,
+            gatheringEvidence: [
+              {
+                area: "Strategic leadership of participation and development",
+                criteria: [
+                  "Leaders set and embed clear expectations for attendance, behaviour and personal responsibility across all provision types",
+                  "Leaders provide learners and apprentices with access to a suitable range of opportunities beyond their taught courses that help them to build confidence, resilience and personal skills",
+                  "Leaders take strategic and proactive steps to support learners and apprentices to engage fully in their studies and wider development"
+                ]
+              },
+              {
+                area: "Attendance, behaviour and participation",
+                criteria: [
+                  "Learners and apprentices have high attendance levels, or improve their attendance quickly and sustainably, including through one-to-one appointments such as apprentice progress reviews",
+                  "Learners and apprentices participate in scheduled learning sessions, tailored one-to-one learning, and other relevant aspects of their programme, including remote learning and work-based elements",
+                  "Where appropriate, learners and apprentices behave professionally, maintain high standards in their training and/or workplace settings, and are supported by teachers, trainers and employers to do so",
+                  "Leaders and staff promote and reinforce high expectations for attendance and participation for all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics"
+                ]
+              },
+              {
+                area: "Wider opportunities",
+                criteria: [
+                  "Learners and apprentices take part in tailored wider development and enrichment activities that prepare them well for adult life, employment or further study, in particular those who are disadvantaged and those groups listed above",
+                  "Learners and apprentices develop their understanding of mental, physical and emotional health, how to protect themselves from radicalisation and extremist views, healthy relationships and online safety, through content that is appropriate to their age and stage",
+                  "Learners and apprentices develop their understanding of fundamental British values, diversity, and respect for all citizens, especially those with protected characteristics, and they can apply this in their learning, work and interactions with others",
+                  "Leaders provide meaningful work-related learning for 16-to-19-year-old learners, which meets statutory requirements",
+                  "Learners and apprentices, as appropriate, make a positive contribution to their communities or support the wider development of others"
+                ]
+              },
+              {
+                area: "Learners' and apprentices' preparation for their next steps",
+                criteria: [
+                  "Learners and apprentices develop the employability skills and personal attributes they need for their intended job roles, further study or, where appropriate, for greater independence",
+                  "Leaders provide learners and apprentices with structured, tailored careers education and guidance that reflect their interests, aspirations and potential next steps",
+                  "Learners and apprentices understand the range of progression routes available to them and can make informed decisions about their future learning, employment and/or training",
+                  "Learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, such as young carers and those without level 2 English and/or mathematics, are supported to explore and plan for progression from their current role or course, including through the use of work-based mentors, where relevant, and they feel confident and well prepared to take their next steps"
+                ]
+              },
+              {
+                area: "Dealing with bullying, unlawful discrimination, harassment and victimisation",
+                criteria: [
+                  "Leaders and staff create a safe and respectful learning environment for all learners and apprentices, in particular those who are disadvantaged and those groups listed above",
+                  "Bullying, unlawful discrimination, harassment and victimisation are not accepted or normalised at the provider, the workplace, or any other premises where learning takes place",
+                  "Learners and apprentices know how to report concerns and are confident that staff will take them seriously and act promptly",
+                  "Staff consistently recognise and address inappropriate language, attitudes and behaviour",
+                  "Leaders monitor incidents and concerns, and take strategic action to address patterns and underlying issues",
+                  "Apprentices are treated appropriately in their workplace and trust that any concerns will be addressed by their employer and the provider"
+                ]
+              },
+              {
+                area: "Inclusive participation and development",
+                criteria: [
+                  "Learners and apprentices feel welcome, valued and respected",
+                  "Learners and apprentices benefit, where relevant, from high-quality professional learning and expertise opportunities, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, such as young carers and those without level 2 English and/or mathematics",
+                  "Learners and apprentices understand, appreciate and respect diversity",
+                  "Learners and apprentices respect the protected characteristics defined by the Equality Act 2010",
+                  "Learners and apprentices have the opportunity to develop a range of professional and social skills in different contexts, for example working and socialising with other learners and apprentices, including those from different religious, ethnic and socioeconomic backgrounds"
+                ]
+              }
+            ],
+            gradeDescriptors: {
+              "Urgent Improvement": [
+                "Bullying, unlawful discrimination, harassment and/or victimisation are common and not addressed properly. Learners and apprentices feel unsupported and lack trust in leaders to handle their concerns, leading to under-reporting",
+                "Leaders have not established a culture that encourages and supports high attendance and participation in learning. They do not take actions that help learners and apprentices overcome their barriers to attendance. As a result, attendance is low",
+                "Learners and apprentices behave inappropriately, and are not challenged or do not respond to requests to modify their behaviour",
+                "Learners and apprentices are not taught the knowledge they need to build healthy relationships, protect themselves from online harm, or protect themselves from radicalisation and extremist views. As a result, they are unsure how to respond to risks or make safe choices",
+                "Leaders have not ensured that learners and apprentices receive careers education and guidance. As a result, learners and apprentices cannot make informed decisions about their future",
+                "Leaders do not meet the requirements of 16-to-19 study programmes. All learners, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics, are excluded from and/or not supported to access work experience or wider opportunities where it is appropriate for them to do so"
+              ],
+              "Needs Attention": [
+                "Leaders understand the importance of attendance and have suitable expectations, but their work to identify and tackle low attendance and/or barriers to attendance is inconsistent and lacks focus. As a result, attendance for some groups of learners and apprentices shows limited or unsustained improvement, and this hinders their progress",
+                "Leaders have suitable expectations of learners' and apprentices' behaviour and attitudes, but staff lack the confidence and/or skills to manage incidents of poor behaviour. This can cause disruptions to learning and slows learners' and apprentices' progress",
+                "Leaders have established a programme of wider development, but this does not consider well enough the well-being and pastoral needs of all learners and apprentices, in particular those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics. As such, they do not benefit from a suitably broad programme of wider development to help them build personal skills or, where relevant, to develop preparedness for adult life",
+                "Although leaders have developed a curriculum that focuses on mental and physical health, healthy relationships, and how to protect themselves from radicalisation, extremist views and harmful online content, it is not matched well with learners' and apprentices' ages or needs. As a result, learners and apprentices do not develop a deep enough understanding of these issues",
+                "Staff teach learners and apprentices about protected characteristics, fundamental British values and cultural diversity in modern Britain, and they challenge any prejudiced views or comments, but this work is not taught in a way that deepens understanding. As a result, learners and apprentices struggle to apply these values or recognise their relevance in daily life or work",
+                "Leaders have offered careers education and guidance programmes to learners and apprentices, but these are unstructured and/or lack detail. They do not give learners and apprentices sufficient information and support to help them make informed choices. Learners' and apprentices' preparedness for future work opportunities is underdeveloped",
+                "Although leaders have planned an appropriate programme of work-related learning for those on 16-to-19 study programmes, this does not yet provide learners with enough or sufficiently relevant opportunities to experience the world of work"
+              ],
+              "Expected Standard": [
+                "Leaders typically ensure that learners and apprentices study and, where relevant, work in safe and respectful environments, where their well-being is prioritised, particularly those who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face other barriers to their learning and/or well-being, including those without level 2 English and/or mathematics",
+                "Leaders set high expectations for the attendance, behaviours and attitudes of groups of learners and apprentices. Learners and apprentices typically behave appropriately and have high attendance at lessons and other activities. Staff address any inappropriate behaviour consistently and promptly",
+                "Leaders do not tolerate bullying, unlawful discrimination, harassment, victimisation, physical and/or sexual violence, or derogatory language. They usually act quickly and appropriately when concerns arise. Learners and apprentices know how to raise issues and are confident that staff will take them seriously",
+                "Leaders identify the reasons why certain learners and apprentices do not attend or participate regularly, particularly those who are disadvantaged, young carers and those groups listed above. Leaders' actions support learners and apprentices to re-engage with their studies",
+                "Leaders generally understand learners' and apprentices' wider development needs. They provide suitable opportunities for groups of learners and apprentices to take part in citizenship programmes, volunteering and/or leadership-related activities, which prepare them well for the future",
+                "The curriculum includes age-appropriate content on mental and physical health, healthy relationships, and how to protect themselves from radicalisation, extremist views and harmful online content. Learners and apprentices develop an appropriate understanding of these issues, and they generally know how to stay safe and make informed choices about their well-being",
+                "Learners and apprentices develop their understanding of, and respect for, protected characteristics, fundamental British values and cultural diversity in modern Britain. Staff address prejudiced views or comments",
+                "Learners and apprentices receive coherent careers education and tailored guidance. On the whole, this helps them make informed decisions about their next steps and challenges any misconceptions or stereotypes they may hold about careers",
+                "Leaders provide a work-related learning programme that is matched to learners' and apprentices' needs, aspirations and intended destinations, and which meets the expectations of the 16-to-19 study programme",
+                "Leaders ensure that learners with high needs access planned support and activities to develop their resilience, confidence and independence over time"
+              ],
+              "Strong Standard": [
+                "Leaders foster an inclusive culture in which diversity is celebrated, equality of opportunity is promoted, and social equity is actively pursued. This work has a significant positive impact on learners and apprentices from all backgrounds. They feel highly valued and respected",
+                "Incidents of bullying, unlawful discrimination, harassment, victimisation, physical and/or sexual violence and derogatory language are rare. When they do occur, they are dealt with consistently and highly effectively",
+                "Leaders' consistent and persistent focus on attendance and participation has had a sustained positive impact on learners and apprentices. Staff contribute to a culture in which high attendance and participation by all groups of learners and apprentices are expected, valued and routinely achieved",
+                "Learners and apprentices are highly motivated, show a strong commitment to their studies and are proud of the work they produce. They collaborate respectfully with their peers, contribute positively to the learning environment, and demonstrate high levels of professionalism in workplace settings",
+                "Where relevant, leaders provide groups of learners and apprentices with a rich and carefully tailored programme of wider opportunities. These develop learners' and apprentices' confidence and independence. Learners and apprentices demonstrate strong personal and social responsibility, for example by contributing to their communities",
+                "Leaders and staff expertly embed fundamental British values, understanding of, and respect for, protected characteristics, and cultural diversity in modern Britain across the curriculum. Learners and apprentices confidently apply their understanding in lessons, workplaces and community engagement",
+                "Leaders and staff skilfully embed high-quality careers education and guidance throughout the curriculum. Learners and apprentices develop detailed knowledge of their potential future pathways and are confident in knowing how to take their next steps",
+                "Learners and apprentices who are disadvantaged, those with SEND or high needs, those who are known (or previously known) to social care, and those who may face any other barriers to their learning or well-being, including those without level 2 English and/or mathematics, receive tailored, impactful support and guidance, which prepare them very well for future learning, employment and/or independence",
+                "Learners on 16-to-19 study programmes benefit from high-quality opportunities to encounter work-related learning. They experience a wide variety of workplace settings. This helps them to develop clear goals and highly relevant employability skills",
+                "Learners with high needs take part in an ambitious programme of development opportunities that build their resilience, confidence and independence. These include high-quality and meaningful activities that help learners to take an active role in their lives and plans for the future"
+              ],
+              "Exceptional": [
+                "Leaders' focus on participation and development has a transformational impact on learners and apprentices from all backgrounds",
+                "Learners and apprentices feel highly valued and respected by staff and their peers, and they support one another exceptionally well",
+                "Leaders' highly focused work on attendance results in learners and apprentices attending their courses at very high rates over a sustained period",
+                "Where relevant, the programme of wider opportunities is exceptional. It relates directly to the development needs of learners and apprentices of different ages and at different stages of learning. High numbers of learners and apprentices benefit from activities such as experiencing community projects, listening to high-quality guest speakers, and having internal and external competitions",
+                "Leaders and staff support learners and apprentices to demonstrate an in-depth knowledge of fundamental British values and diversity, and respect for protected characteristics",
+                "There are no significant areas for improvement that leaders have not already prioritised"
+              ]
+            }
+          }
+        };
+
+        const LucideIcon = ({ name, className = "", size = 24 }) => {
+          useEffect(() => {
+            lucide.createIcons();
+          });
+          return React.createElement('i', {
+            'data-lucide': name,
+            className: className,
+            style: { width: size, height: size }
+          });
+        };
+
+        const OfstedEvidenceBuilder = () => {
+          const [activeSection, setActiveSection] = useState('safeguarding');
+          const [evidenceData, setEvidenceData] = useState({});
+          const [showAddEvidence, setShowAddEvidence] = useState(null);
+          const [newEvidence, setNewEvidence] = useState({ description: '', evidence: '', links: '' });
+          const [isGenerating, setIsGenerating] = useState(false);
+          const [generatedReport, setGeneratedReport] = useState(null);
+          const [activeView, setActiveView] = useState('evidence');
+          const [currentUser, setCurrentUser] = useState('');
+          const [showUserPrompt, setShowUserPrompt] = useState(false);
+          const [lastSaved, setLastSaved] = useState(null);
+          const [showBackupReminder, setShowBackupReminder] = useState(false);
+          const [apiKey, setApiKey] = useState('');
+          const [showApiKeyPrompt, setShowApiKeyPrompt] = useState(true);
+          const [tempApiKey, setTempApiKey] = useState('');
+          const [showApiKeySettings, setShowApiKeySettings] = useState(false);
+          const [apiKeyError, setApiKeyError] = useState(false);
+          const [actionPlan, setActionPlan] = useState(null);
+          const [inspectorQuestions, setInspectorQuestions] = useState(null);
+          const [showInspectorQuestions, setShowInspectorQuestions] = useState(null);
+
+          useEffect(() => {
+            const savedData = localStorage.getItem('mgts_ofsted_evidence');
+            const savedUser = localStorage.getItem('mgts_current_user');
+            
+            if (savedData) {
+              try {
+                const parsed = JSON.parse(savedData);
+                setEvidenceData(parsed.data);
+                setLastSaved(new Date(parsed.timestamp));
+              } catch (e) {
+                console.error("Error loading saved data:", e);
+                initializeData();
+              }
+            } else {
+              initializeData();
+            }
+
+            if (savedUser) {
+              setCurrentUser(savedUser);
+            } else {
+              setShowUserPrompt(true);
+            }
+          }, []);
+
+          useEffect(() => {
+            if (Object.keys(evidenceData).length > 0 && !showUserPrompt) {
+              saveData();
+            }
+          }, [evidenceData]);
+
+          const initializeData = () => {
+            const initialData = {};
+            Object.keys(OFSTED_FRAMEWORK).forEach(sectionKey => {
+              const section = OFSTED_FRAMEWORK[sectionKey];
+              const isSafeguarding = section.type === 'binary';
+              
+              // For new structure with gatheringEvidence
+              if (section.gatheringEvidence) {
+                initialData[sectionKey] = {
+                  areas: section.gatheringEvidence.map(area => ({
+                    areaName: area.area,
+                    criteria: area.criteria.map(criterion => ({
+                      criterion: criterion,
+                      evidence: [],
+                      suggestedGrade: isSafeguarding ? "NOT MET" : "Urgent Improvement",
+                      gradeReasoning: "",
+                      confirmedGrade: null
+                    }))
+                  }))
+                };
+              }
+              // For old structure with criteria (backwards compatibility for sections not yet updated)
+              else if (section.criteria) {
+                initialData[sectionKey] = {
+                  criteria: section.criteria.map(c => ({
+                    criterion: c,
+                    evidence: [],
+                    suggestedGrade: isSafeguarding ? "NOT MET" : "Urgent Improvement",
+                    gradeReasoning: "",
+                    confirmedGrade: null
+                  }))
+                };
+              }
+            });
+            setEvidenceData(initialData);
+          };
+
+          const saveData = () => {
+            const dataToSave = {
+              data: evidenceData,
+              timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('mgts_ofsted_evidence', JSON.stringify(dataToSave));
+            setLastSaved(new Date());
+          };
+
+          const exportData = () => {
+            const dataStr = JSON.stringify({ data: evidenceData, timestamp: new Date().toISOString() }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mgts_ofsted_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            localStorage.setItem('mgts_last_backup', Date.now().toString());
+            setShowBackupReminder(false);
+          };
+
+          const importData = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                try {
+                  const imported = JSON.parse(e.target.result);
+                  setEvidenceData(imported.data);
+                  setLastSaved(new Date(imported.timestamp));
+                  alert('Data imported successfully!');
+                } catch (error) {
+                  alert('Error importing data. Please check the file format.');
+                }
+              };
+              reader.readAsText(file);
+            }
+          };
+
+          const handleUserSubmit = () => {
+            if (currentUser.trim()) {
+              localStorage.setItem('mgts_current_user', currentUser);
+              setShowUserPrompt(false);
+            }
+          };
+
+          const handleApiKeySubmit = () => {
+            if (tempApiKey.trim().startsWith('sk-ant-')) {
+              setApiKey(tempApiKey.trim());
+              setShowApiKeyPrompt(false);
+              setShowApiKeySettings(false);
+              setTempApiKey('');
+              setApiKeyError(false);
+            } else {
+              setApiKeyError(true);
+            }
+          };
+
+          const askInspectorQuestions = async (sectionKey, areaIndex, criterionIndex) => {
+            if (!apiKey) {
+              alert("API key required");
+              setShowApiKeySettings(true);
+              return;
+            }
+
+            setIsGenerating(true);
+            setShowInspectorQuestions(`${sectionKey}-${areaIndex}-${criterionIndex}`);
+
+            try {
+              // Get criterion from appropriate structure
+              let criterion, criterionText;
+              if (evidenceData[sectionKey].areas) {
+                criterion = evidenceData[sectionKey].areas[areaIndex].criteria[criterionIndex];
+                criterionText = OFSTED_FRAMEWORK[sectionKey].gatheringEvidence[areaIndex].criteria[criterionIndex];
+              } else {
+                criterion = evidenceData[sectionKey].criteria[criterionIndex];
+                criterionText = criterion.criterion;
+              }
+              
+              const section = OFSTED_FRAMEWORK[sectionKey];
+
+              const response = await fetch("https://mgts-api-proxy.jordan-geoghegan.workers.dev/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": apiKey
+                },
+                body: JSON.stringify({
+                  model: "claude-sonnet-4-20250514",
+                  max_tokens: 800,
+                  messages: [{
+                    role: "user",
+                    content: `You are an Ofsted inspector evaluating evidence for Further Education and Skills providers using the September 2025 Inspection Toolkit.
+
+Evaluation Area: ${section.title}
+Criterion: ${criterionText}
+
+Current Evidence:
+${criterion.evidence.length > 0 ? criterion.evidence.map((e, i) => `${i + 1}. ${e.professionalStatement}`).join('\n') : 'No evidence provided yet'}
+
+Task: Generate 4-6 probing questions that an Ofsted inspector would ask during an inspection visit to verify this criterion under the September 2025 framework. Questions should:
+- Start broad, then get specific
+- Seek concrete examples and data
+- Probe for impact and outcomes
+- Check for consistency and sustainability
+- Target different stakeholder groups (learners, staff, employers)
+
+Format as numbered list. Be direct and professional, like a real inspector would ask.`
+                  }]
+                })
+              });
+
+              if (!response.ok) throw new Error('Failed to generate questions');
+              const data = await response.json();
+
+              setInspectorQuestions({
+                sectionKey,
+                areaIndex,
+                criterionIndex,
+                questions: data.content[0].text.trim()
+              });
+
+            } catch (error) {
+              console.error("Error:", error);
+              alert(`Error: ${error.message}`);
+            } finally {
+              setIsGenerating(false);
+            }
+          };
+
+          const gradeEvidence = async (sectionKey, areaIndex, criterionIndex) => {
+            if (!apiKey) {
+              alert("API key required");
+              setShowApiKeySettings(true);
+              return;
+            }
+
+            setIsGenerating(true);
+
+            try {
+              const section = OFSTED_FRAMEWORK[sectionKey];
+              const isSafeguarding = section.type === 'binary';
+              
+              // Get criterion from appropriate structure
+              let criterion;
+              if (evidenceData[sectionKey].areas) {
+                criterion = evidenceData[sectionKey].areas[areaIndex].criteria[criterionIndex];
+              } else {
+                criterion = evidenceData[sectionKey].criteria[criterionIndex];
+              }
+
+              // Build evidence summary focusing on RAW evidence only
+              let rawEvidenceSummary = '';
+              if (criterion.evidence.length > 0) {
+                rawEvidenceSummary = criterion.evidence.map((e, i) => {
+                  return `${i + 1}. What they do: "${e.description}"\n   Evidence provided: "${e.rawEvidence}"`;
+                }).join('\n\n');
+              } else {
+                rawEvidenceSummary = 'No evidence provided';
+              }
+
+              // Get full grade descriptors from framework
+              const gradeDescriptors = section.gradeDescriptors || {};
+              
+              const gradingPrompt = isSafeguarding ? 
+              `You are an Ofsted inspector conducting a rigorous assessment under the FE&Skills Inspection Toolkit (September 2025).
+
+CRITICAL: You are assessing SAFEGUARDING - this uses a BINARY grading system: MET or NOT MET.
+
+Evaluation Area: ${section.title}
+Criterion: ${criterion.criterion}
+
+RAW EVIDENCE PROVIDED (assess THIS, not any polished descriptions):
+${rawEvidenceSummary}
+
+FULL GRADE DESCRIPTORS FROM TOOLKIT:
+
+NOT MET - Safeguarding is 'not met' when any of the following apply:
+${gradeDescriptors["NOT MET"] ? gradeDescriptors["NOT MET"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'See toolkit for details'}
+
+MET - Safeguarding is 'met' when all the following apply:
+${gradeDescriptors["MET"] ? gradeDescriptors["MET"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'See toolkit for details'}
+
+STRICT SAFEGUARDING ASSESSMENT RULES:
+- Safeguarding is BINARY: either MET or NOT MET
+- DEFAULT to NOT MET unless there is clear, specific, substantive evidence
+- Vague descriptions like "we have policies" or "test" = NOT MET
+- Generic statements without specifics = NOT MET
+- Missing evidence = NOT MET
+- Only grade as MET if you can see:
+  * Specific policies/procedures mentioned
+  * Named individuals or roles
+  * Concrete examples of actions taken
+  * Data or outcomes
+  * Documentation references
+
+For MET, you must see TANGIBLE evidence that would satisfy an inspector asking "show me the evidence".
+Consider how this criterion contributes to meeting the FULL descriptors for MET shown above.
+
+Respond in JSON format ONLY:
+{
+  "suggestedGrade": "MET" or "NOT MET",
+  "reasoning": "Brief explanation citing what specific evidence is present or absent, and how it relates to the full MET/NOT MET descriptors",
+  "strengthsFound": "[specific evidence that works well, or 'None identified' if weak]",
+  "areasForImprovement": "[specific gaps in evidence or what's needed to meet the full descriptors]"
+}
+
+DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.` 
+              : 
+              `You are an Ofsted inspector conducting a rigorous assessment under the FE&Skills Inspection Toolkit (September 2025).
+
+Grading Scale (5-point scale):
+1. Urgent Improvement - Serious weaknesses, no credible evidence
+2. Needs Attention - Weak evidence, significant gaps
+3. Expected Standard - Adequate evidence meeting minimum requirements
+4. Strong Standard - Good evidence with clear impact
+5. Exceptional - Outstanding evidence with exceptional outcomes
+
+Evaluation Area: ${section.title}
+Criterion: ${criterion.criterion}
+
+RAW EVIDENCE PROVIDED (assess THIS, not any polished descriptions):
+${rawEvidenceSummary}
+
+FULL GRADE DESCRIPTORS FROM TOOLKIT:
+
+URGENT IMPROVEMENT:
+${gradeDescriptors["Urgent Improvement"] ? gradeDescriptors["Urgent Improvement"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'Serious weaknesses'}
+
+NEEDS ATTENTION:
+${gradeDescriptors["Needs Attention"] ? gradeDescriptors["Needs Attention"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'Significant gaps'}
+
+EXPECTED STANDARD (must meet ALL of these):
+${gradeDescriptors["Expected Standard"] ? gradeDescriptors["Expected Standard"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'Minimum requirements met'}
+
+STRONG STANDARD (must meet Expected AND ALL of these):
+${gradeDescriptors["Strong Standard"] ? gradeDescriptors["Strong Standard"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'Clear impact demonstrated'}
+
+EXCEPTIONAL (must meet Strong AND ALL of these):
+${gradeDescriptors["Exceptional"] ? gradeDescriptors["Exceptional"].map((d, i) => `${i + 1}. ${d}`).join('\n') : 'Outstanding sustained outcomes'}
+
+CRITICAL ASSESSMENT RULES:
+- Be HARSH and HONEST - you are protecting learners
+- Vague descriptions (e.g., "we do training", "test") = Urgent Improvement or Needs Attention
+- Generic statements without specifics = Needs Attention
+- No evidence or placeholder text = Urgent Improvement
+- To reach Expected Standard, evidence must demonstrate alignment with the EXPECTED STANDARD descriptors above
+- To reach Strong/Exceptional, evidence must meet progressively higher descriptors
+
+Ask yourself: "If an inspector asked to see this evidence, what could MGTS actually show them?"
+Consider how this criterion contributes to meeting the FULL grade descriptors shown above.
+
+Respond in JSON format ONLY:
+{
+  "suggestedGrade": "[one of: Urgent Improvement, Needs Attention, Expected Standard, Strong Standard, Exceptional]",
+  "reasoning": "Brief explanation citing specific evidence present or gaps identified, and how it relates to the grade descriptors",
+  "strengthsFound": "[specific evidence that works well, or 'None identified' if weak]",
+  "areasForImprovement": "[specific evidence gaps or what's needed to meet higher grade descriptors]"
+}
+
+DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.`;
+
+              const response = await fetch("https://mgts-api-proxy.jordan-geoghegan.workers.dev/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": apiKey
+                },
+                body: JSON.stringify({
+                  model: "claude-sonnet-4-20250514",
+                  max_tokens: 1500,
+                  messages: [{
+                    role: "user",
+                    content: gradingPrompt
+                  }]
+                })
+              });
+
+              if (!response.ok) throw new Error('Failed to grade evidence');
+              const data = await response.json();
+              let responseText = data.content[0].text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+              const grading = JSON.parse(responseText);
+
+              const updatedData = { ...evidenceData };
+              
+              // Update in appropriate structure
+              if (updatedData[sectionKey].areas) {
+                updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].suggestedGrade = grading.suggestedGrade;
+                updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].gradeReasoning = grading.reasoning;
+                updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].strengthsFound = grading.strengthsFound;
+                updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].areasForImprovement = grading.areasForImprovement;
+              } else {
+                updatedData[sectionKey].criteria[criterionIndex].suggestedGrade = grading.suggestedGrade;
+                updatedData[sectionKey].criteria[criterionIndex].gradeReasoning = grading.reasoning;
+                updatedData[sectionKey].criteria[criterionIndex].strengthsFound = grading.strengthsFound;
+                updatedData[sectionKey].criteria[criterionIndex].areasForImprovement = grading.areasForImprovement;
+              }
+              
+              setEvidenceData(updatedData);
+
+            } catch (error) {
+              console.error("Error:", error);
+              alert(`Error grading evidence: ${error.message}`);
+            } finally {
+              setIsGenerating(false);
+            }
+          };
+
+          const generateProfessionalStatement = async (sectionKey, areaIndex, criterionIndex) => {
+            if (!newEvidence.description || !newEvidence.evidence) {
+              alert("Please fill in both description and evidence fields");
+              return;
+            }
+
+            if (!apiKey) {
+              alert("API key not configured");
+              setShowApiKeySettings(true);
+              return;
+            }
+
+            setIsGenerating(true);
+
+            try {
+              // Get criterion text from appropriate structure
+              let criterionText;
+              const framework = OFSTED_FRAMEWORK[sectionKey];
+              if (framework.gatheringEvidence) {
+                // New structure with areas
+                criterionText = framework.gatheringEvidence[areaIndex].criteria[criterionIndex];
+              } else {
+                // Old structure with flat criteria
+                criterionText = framework.criteria[criterionIndex];
+              }
+              
+              const response = await fetch("https://mgts-api-proxy.jordan-geoghegan.workers.dev/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": apiKey
+                },
+                body: JSON.stringify({
+                  model: "claude-sonnet-4-20250514",
+                  max_tokens: 500,
+                  messages: [{
+                    role: "user",
+                    content: `Context:
+- Ofsted Evaluation Area: ${framework.title}
+- Specific Criterion: ${criterionText}
+
+Staff Input:
+What we do: ${newEvidence.description}
+Evidence: ${newEvidence.evidence}
+
+Task: Transform this into a professional, third-person evidence statement suitable for an Ofsted inspection evidence file. Write as if documenting established organisational practice. Be specific, use evidence-based language, and maintain professional tone. Keep it concise (2-3 sentences maximum).
+
+Format your response as a single paragraph without any preamble or metadata.`
+                  }]
+                })
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'API request failed');
+              }
+
+              const data = await response.json();
+              const professionalResponse = data.content[0].text.trim();
+
+              const updatedData = { ...evidenceData };
+              
+              const evidenceItem = {
+                id: Date.now(),
+                description: newEvidence.description,
+                rawEvidence: newEvidence.evidence,
+                professionalStatement: professionalResponse,
+                links: newEvidence.links.split('\n').filter(l => l.trim()),
+                dateAdded: new Date().toISOString(),
+                addedBy: currentUser
+              };
+              
+              // Add to appropriate structure
+              if (updatedData[sectionKey].areas) {
+                updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].evidence.push(evidenceItem);
+              } else {
+                updatedData[sectionKey].criteria[criterionIndex].evidence.push(evidenceItem);
+              }
+
+              setEvidenceData(updatedData);
+              setNewEvidence({ description: '', evidence: '', links: '' });
+              setShowAddEvidence(null);
+
+              setTimeout(() => gradeEvidence(sectionKey, areaIndex, criterionIndex), 500);
+
+            } catch (error) {
+              console.error("Error:", error);
+              alert(`Error: ${error.message}`);
+            } finally {
+              setIsGenerating(false);
+            }
+          };
+
+          const removeEvidence = (sectionKey, areaIndex, criterionIndex, evidenceId) => {
+            if (confirm('Are you sure you want to remove this evidence?')) {
+              const updatedData = { ...evidenceData };
+              
+              // Remove from appropriate structure
+              if (updatedData[sectionKey].areas) {
+                updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].evidence = 
+                  updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].evidence.filter(ev => ev.id !== evidenceId);
+              } else {
+                updatedData[sectionKey].criteria[criterionIndex].evidence = 
+                  updatedData[sectionKey].criteria[criterionIndex].evidence.filter(ev => ev.id !== evidenceId);
+              }
+              
+              setEvidenceData(updatedData);
+              
+              // Re-grade after removing evidence
+              setTimeout(() => gradeEvidence(sectionKey, areaIndex, criterionIndex), 500);
+            }
+          };
+
+          const confirmGrade = (sectionKey, areaIndex, criterionIndex, grade) => {
+            const updatedData = { ...evidenceData };
+            
+            // Update in appropriate structure
+            if (updatedData[sectionKey].areas) {
+              updatedData[sectionKey].areas[areaIndex].criteria[criterionIndex].confirmedGrade = grade;
+            } else {
+              updatedData[sectionKey].criteria[criterionIndex].confirmedGrade = grade;
+            }
+            
+            setEvidenceData(updatedData);
+          };
+
+          const calculateSectionGrade = (sectionKey) => {
+            const section = evidenceData[sectionKey];
+            const isSafeguarding = OFSTED_FRAMEWORK[sectionKey].type === 'binary';
+            
+            if (!section) return isSafeguarding ? "NOT MET" : "Urgent Improvement";
+
+            let grades = [];
+            
+            // Handle new structure with areas
+            if (section.areas) {
+              section.areas.forEach(area => {
+                area.criteria.forEach(criterion => {
+                  grades.push(criterion.confirmedGrade || criterion.suggestedGrade || (isSafeguarding ? "NOT MET" : "Urgent Improvement"));
+                });
+              });
+            }
+            // Handle old structure with flat criteria (backwards compatibility)
+            else if (section.criteria) {
+              grades = section.criteria.map(c => 
+                c.confirmedGrade || c.suggestedGrade || (isSafeguarding ? "NOT MET" : "Urgent Improvement")
+              );
+            }
+
+            if (isSafeguarding) {
+              // For safeguarding, if ANY criterion is NOT MET, the whole section is NOT MET
+              return grades.includes("NOT MET") ? "NOT MET" : "MET";
+            }
+
+            // For other sections: Secure fit approach - Take the LOWEST grade (most conservative)
+            const gradeScores = grades.map(g => GRADE_LEVELS.indexOf(g));
+            const lowestScore = Math.min(...gradeScores);
+            return GRADE_LEVELS[lowestScore];
+          };
+
+          const getSectionGrade = (sectionKey) => {
+            return calculateSectionGrade(sectionKey);
+          };
+
+          const getGradeColor = (grade, isSafeguarding = false) => {
+            if (isSafeguarding) {
+              if (grade === 'MET') return 'bg-green-600';
+              if (grade === 'NOT MET') return 'bg-red-600';
+            }
+            
+            const index = GRADE_LEVELS.indexOf(grade);
+            if (index === 0) return 'bg-red-600';
+            if (index === 1) return 'bg-orange-500';
+            if (index === 2) return 'bg-green-600';
+            if (index === 3) return 'bg-green-800';
+            if (index === 4) return 'bg-blue-600';
+            return 'bg-gray-500';
+          };
+
+          const getGradeTextColor = (grade, isSafeguarding = false) => {
+            if (isSafeguarding) {
+              if (grade === 'MET') return 'text-green-600';
+              if (grade === 'NOT MET') return 'text-red-600';
+            }
+            
+            const index = GRADE_LEVELS.indexOf(grade);
+            if (index === 0) return 'text-red-600';
+            if (index === 1) return 'text-orange-500';
+            if (index === 2) return 'text-green-600';
+            if (index === 3) return 'text-green-800';
+            if (index === 4) return 'text-blue-600';
+            return 'text-gray-500';
+          };
+
+          const GradeIndicator = ({ grade, isSafeguarding = false }) => {
+            const color = getGradeColor(grade, isSafeguarding);
+            return (
+              <div className={`px-3 py-1 ${color} text-white text-xs rounded-full font-semibold`}>
+                {grade}
+              </div>
+            );
+          };
+
+          const generateSelfAssessment = async () => {
+            if (!apiKey) {
+              alert("API key required");
+              setShowApiKeySettings(true);
+              return;
+            }
+
+            setIsGenerating(true);
+
+            try {
+              const sections = Object.keys(OFSTED_FRAMEWORK);
+              const reportSections = {};
+
+              for (const sectionKey of sections) {
+                const section = OFSTED_FRAMEWORK[sectionKey];
+                const sectionData = evidenceData[sectionKey];
+                const grade = getSectionGrade(sectionKey);
+
+                let evidenceSummary = '';
+                
+                // Handle new structure with areas
+                if (sectionData.areas) {
+                  sectionData.areas.forEach((area, areaIdx) => {
+                    evidenceSummary += `\n\n=== ${area.areaName} ===\n`;
+                    area.criteria.forEach((criterion, critIdx) => {
+                      if (criterion.evidence.length > 0) {
+                        evidenceSummary += `\nCriterion: ${OFSTED_FRAMEWORK[sectionKey].gatheringEvidence[areaIdx].criteria[critIdx]}\n`;
+                        evidenceSummary += `Duncan's Grading: ${criterion.suggestedGrade || 'Not assessed'}\n`;
+                        if (criterion.gradeReasoning) {
+                          evidenceSummary += `Reasoning: ${criterion.gradeReasoning}\n`;
+                        }
+                        evidenceSummary += `Evidence:\n`;
+                        criterion.evidence.forEach(ev => {
+                          evidenceSummary += `- ${ev.professionalStatement}\n`;
+                        });
+                      }
+                    });
+                  });
+                }
+                // Handle old structure with flat criteria
+                else if (sectionData.criteria) {
+                  sectionData.criteria.forEach((criterion) => {
+                    if (criterion.evidence.length > 0) {
+                      evidenceSummary += `\n\nCriterion: ${criterion.criterion}\n`;
+                      evidenceSummary += `Duncan's Grading: ${criterion.suggestedGrade || 'Not assessed'}\n`;
+                      if (criterion.gradeReasoning) {
+                        evidenceSummary += `Reasoning: ${criterion.gradeReasoning}\n`;
+                      }
+                      evidenceSummary += `Evidence:\n`;
+                      criterion.evidence.forEach(ev => {
+                        evidenceSummary += `- ${ev.professionalStatement}\n`;
+                      });
+                    }
+                  });
+                }
+
+                const response = await fetch("https://mgts-api-proxy.jordan-geoghegan.workers.dev/", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey
+                  },
+                  body: JSON.stringify({
+                    model: "claude-sonnet-4-20250514",
+                    max_tokens: 2000,
+                    messages: [{
+                      role: "user",
+                      content: `You are writing a self-assessment report section for Midlands Group Training Services (MGTS) for Ofsted inspection preparation using the September 2025 FE&Skills Inspection Toolkit.
+
+Evaluation Area: ${section.title}
+Current Grade Assessment: ${grade}
+
+Evidence Summary with AI Inspector Grades:
+${evidenceSummary || 'Limited evidence currently documented for this section.'}
+
+Task: Write a professional, evaluative narrative for this section of the self-assessment report. Include:
+1. Brief overview of current position (2-3 sentences)
+2. Key strengths with reference to evidence (bullet points)
+3. Areas for development/improvement (bullet points)
+4. Justification for the ${grade} grade using the September 2025 toolkit criteria
+
+IMPORTANT: Do NOT include the section title "${section.title}" at the beginning of your response. Start directly with the narrative content.
+
+Write in third person, professional tone, suitable for an Ofsted self-assessment report. Be honest about strengths and areas for improvement. Maximum 300 words.`
+                    }]
+                  })
+                });
+
+                if (!response.ok) throw new Error('Failed to generate section');
+                const data = await response.json();
+                
+                reportSections[sectionKey] = {
+                  title: section.title,
+                  grade: grade,
+                  narrative: data.content[0].text.trim()
+                };
+              }
+
+              const overallResponse = await fetch("https://mgts-api-proxy.jordan-geoghegan.workers.dev/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": apiKey
+                },
+                body: JSON.stringify({
+                  model: "claude-sonnet-4-20250514",
+                  max_tokens: 1500,
+                  messages: [{
+                    role: "user",
+                    content: `You are writing the executive summary for Midlands Group Training Services (MGTS) Ofsted self-assessment report using the September 2025 FE&Skills Inspection Toolkit.
+
+Section Grades:
+${Object.keys(reportSections).map(key => `- ${reportSections[key].title}: ${reportSections[key].grade}`).join('\n')}
+
+Task: Write a professional executive summary (200-250 words) that:
+1. States the overall effectiveness grade (using secure fit approach - lowest grade determines overall)
+2. Provides brief rationale aligned with September 2025 toolkit expectations
+3. Highlights key strengths across the provision
+4. Identifies strategic priorities for improvement
+5. Concludes with confidence statement for inspection readiness
+
+Write in professional, evaluative tone suitable for senior leadership and trustees.`
+                  }]
+                })
+              });
+
+              if (!overallResponse.ok) throw new Error('Failed to generate executive summary');
+              const overallData = await overallResponse.json();
+
+              setGeneratedReport({
+                date: new Date().toISOString(),
+                sections: reportSections,
+                executiveSummary: overallData.content[0].text.trim()
+              });
+
+            } catch (error) {
+              console.error("Error:", error);
+              alert(`Error generating report: ${error.message}`);
+            } finally {
+              setIsGenerating(false);
+            }
+          };
+
+          const generateActionPlan = async () => {
+            if (!apiKey) {
+              alert("API key required");
+              setShowApiKeySettings(true);
+              return;
+            }
+
+            setIsGenerating(true);
+
+            try {
+              const priorities = [];
+              Object.keys(OFSTED_FRAMEWORK).forEach(sectionKey => {
+                const section = OFSTED_FRAMEWORK[sectionKey];
+                const sectionData = evidenceData[sectionKey];
+                
+                // Handle new structure with areas
+                if (sectionData.areas) {
+                  sectionData.areas.forEach((area, areaIdx) => {
+                    area.criteria.forEach((criterion, critIdx) => {
+                      const grade = criterion.confirmedGrade || criterion.suggestedGrade || "Expected Standard";
+                      const gradeIndex = GRADE_LEVELS.indexOf(grade);
+                      const criterionText = OFSTED_FRAMEWORK[sectionKey].gatheringEvidence[areaIdx].criteria[critIdx];
+                      
+                      if (gradeIndex <= 1) {
+                        priorities.push({
+                          section: section.title,
+                          area: area.areaName,
+                          criterion: criterionText,
+                          grade: grade,
+                          evidenceCount: criterion.evidence.length,
+                          reasoning: criterion.gradeReasoning || ''
+                        });
+                      }
+                    });
+                  });
+                }
+                // Handle old structure with flat criteria
+                else if (sectionData.criteria) {
+                  sectionData.criteria.forEach((criterion) => {
+                    const grade = criterion.confirmedGrade || criterion.suggestedGrade || "Expected Standard";
+                    const gradeIndex = GRADE_LEVELS.indexOf(grade);
+                    
+                    if (gradeIndex <= 1) {
+                      priorities.push({
+                        section: section.title,
+                        criterion: criterion.criterion,
+                        grade: grade,
+                        evidenceCount: criterion.evidence.length,
+                        reasoning: criterion.gradeReasoning || ''
+                      });
+                    }
+                  });
+                }
+              });
+
+              if (priorities.length === 0) {
+                setActionPlan({
+                  date: new Date().toISOString(),
+                  message: "Excellent progress! All criteria are currently rated at Expected Standard or above. Continue to maintain and strengthen your evidence base."
+                });
+                setIsGenerating(false);
+                return;
+              }
+
+              const response = await fetch("https://mgts-api-proxy.jordan-geoghegan.workers.dev/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": apiKey
+                },
+                body: JSON.stringify({
+                  model: "claude-sonnet-4-20250514",
+                  max_tokens: 2500,
+                  messages: [{
+                    role: "user",
+                    content: `You are creating an action plan for Midlands Group Training Services (MGTS) to improve their Ofsted inspection readiness under the September 2025 FE&Skills Inspection Toolkit.
+
+Priority Areas Requiring Action (Urgent Improvement and Needs Attention):
+
+${priorities.map((p, i) => `${i + 1}. [${p.grade}] ${p.section}${p.area ? ` - ${p.area}` : ''}
+   Criterion: ${p.criterion}
+   Current evidence items: ${p.evidenceCount}
+   ${p.reasoning ? 'Inspector feedback: ' + p.reasoning : ''}`).join('\n\n')}
+
+Task: Create a prioritised action plan that:
+1. Prioritises Urgent Improvement first, then Needs Attention
+2. For each priority area, provides:
+   - Specific, actionable steps to gather evidence that meets September 2025 toolkit standards
+   - Suggested evidence sources (documents, data, observations)
+   - Responsible roles (e.g., Quality Manager, Senior Leadership)
+   - Realistic timeframe (immediate, 1 month, 2-3 months)
+   - Success criteria aligned with September 2025 expectations (what "good" looks like)
+
+Format as a structured action plan suitable for senior leadership. Be practical and specific to education/training providers. Maximum 400 words.
+
+Use clear headings and bullet points for readability.`
+                  }]
+                })
+              });
+
+              if (!response.ok) throw new Error('Failed to generate action plan');
+              const data = await response.json();
+
+              setActionPlan({
+                date: new Date().toISOString(),
+                priorities: priorities,
+                actionPlan: data.content[0].text.trim()
+              });
+
+            } catch (error) {
+              console.error("Error:", error);
+              alert(`Error generating action plan: ${error.message}`);
+            } finally {
+              setIsGenerating(false);
+            }
+          };
+
+          const parseMarkdownToHTML = (text) => {
+            if (!text) return '';
+            
+            // Convert markdown to HTML
+            let html = text;
+            
+            // Headers (### -> h3, ## -> h2, # -> h1)
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            
+            // Bold (**text** or __text__)
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+            
+            // Italic (*text* or _text_)
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+            
+            // Bullet points (- or *)
+            html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+            
+            // Wrap consecutive <li> tags in <ul>
+            html = html.replace(/(<li>.*<\/li>\n?)+/gs, (match) => {
+              return '<ul>' + match + '</ul>';
+            });
+            
+            // Numbered lists (1. 2. 3. etc.)
+            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+            
+            // Wrap consecutive numbered <li> tags in <ol>
+            html = html.replace(/(<li>.*<\/li>\n?)+/gs, (match) => {
+              // Only wrap in <ol> if not already wrapped in <ul>
+              if (!match.includes('<ul>')) {
+                return '<ol>' + match + '</ol>';
+              }
+              return match;
+            });
+            
+            // Line breaks
+            html = html.replace(/\n/g, '<br>');
+            
+            // Clean up extra line breaks around headers and lists
+            html = html.replace(/<br>(<h[1-3]>)/g, '$1');
+            html = html.replace(/(<\/h[1-3]>)<br>/g, '$1');
+            html = html.replace(/<br>(<[ou]l>)/g, '$1');
+            html = html.replace(/(<\/[ou]l>)<br>/g, '$1');
+            
+            return html;
+          };
+
+          const exportReportToPDF = () => {
+            if (!generatedReport) return;
+
+            let htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MGTS Ofsted Self-Assessment Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 210mm; margin: 0 auto; padding: 20mm; }
+    h1 { color: #1e40af; border-bottom: 3px solid #1e40af; padding-bottom: 10px; }
+    h2 { color: #1e40af; margin-top: 30px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+    h3 { color: #1e40af; margin-top: 20px; font-size: 1.1em; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .grade { display: inline-block; padding: 5px 15px; border-radius: 5px; font-weight: bold; margin-left: 10px; color: white; }
+    .grade-met { background-color: #059669; }
+    .grade-notmet { background-color: #dc2626; }
+    .grade-urgent { background-color: #dc2626; }
+    .grade-needs { background-color: #f97316; }
+    .grade-expected { background-color: #059669; }
+    .grade-strong { background-color: #065f46; }
+    .grade-exceptional { background-color: #2563eb; }
+    .executive-summary { background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .section { margin: 30px 0; }
+    ul, ol { margin: 10px 0; padding-left: 25px; }
+    li { margin: 5px 0; }
+    strong { font-weight: bold; }
+    em { font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>MIDLANDS GROUP TRAINING SERVICES (MGTS)</h1>
+    <h2>OFSTED SELF-ASSESSMENT REPORT</h2>
+    <p><strong>Generated:</strong> ${new Date(generatedReport.date).toLocaleDateString('en-GB')}</p>
+  </div>
+
+  <div class="executive-summary">
+    <h2>Executive Summary</h2>
+    <div>${parseMarkdownToHTML(generatedReport.executiveSummary)}</div>
+  </div>
+
+  <h2>Detailed Evaluation Areas</h2>
+`;
+
+            Object.keys(generatedReport.sections).forEach(sectionKey => {
+              const section = generatedReport.sections[sectionKey];
+              const isSafeguarding = sectionKey === 'safeguarding';
+              
+              let gradeClass = 'grade-expected';
+              if (isSafeguarding) {
+                gradeClass = section.grade === 'MET' ? 'grade-met' : 'grade-notmet';
+              } else {
+                const gradeIndex = GRADE_LEVELS.indexOf(section.grade);
+                if (gradeIndex === 0) gradeClass = 'grade-urgent';
+                else if (gradeIndex === 1) gradeClass = 'grade-needs';
+                else if (gradeIndex === 2) gradeClass = 'grade-expected';
+                else if (gradeIndex === 3) gradeClass = 'grade-strong';
+                else if (gradeIndex === 4) gradeClass = 'grade-exceptional';
+              }
+
+              htmlContent += `
+  <div class="section">
+    <h2>${section.title} <span class="${gradeClass} grade">${section.grade}</span></h2>
+    <div>${parseMarkdownToHTML(section.narrative)}</div>
+  </div>
+`;
+            });
+
+            htmlContent += `
+</body>
+</html>`;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MGTS_Self_Assessment_${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+          };
+
+          const exportActionPlan = () => {
+            if (!actionPlan) return;
+
+            let htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MGTS Ofsted Action Plan</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 210mm; margin: 0 auto; padding: 20mm; }
+    h1 { color: #1e40af; border-bottom: 3px solid #1e40af; padding-bottom: 10px; }
+    h2 { color: #1e40af; margin-top: 30px; }
+    h3 { color: #1e40af; margin-top: 20px; font-size: 1.1em; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .priority-urgent { background-color: #fee2e2; border-left: 4px solid #dc2626; padding: 10px; margin: 10px 0; }
+    .priority-needs { background-color: #fed7aa; border-left: 4px solid #f97316; padding: 10px; margin: 10px 0; }
+    .action-plan { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    ul, ol { margin: 10px 0; padding-left: 25px; }
+    li { margin: 5px 0; }
+    strong { font-weight: bold; }
+    em { font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>MIDLANDS GROUP TRAINING SERVICES (MGTS)</h1>
+    <h2>OFSTED READINESS ACTION PLAN</h2>
+    <p><strong>Generated:</strong> ${new Date(actionPlan.date).toLocaleDateString('en-GB')}</p>
+  </div>
+
+  ${actionPlan.message ? `<p>${actionPlan.message}</p>` : `
+  <h2>Priority Areas (${actionPlan.priorities.length})</h2>
+  ${actionPlan.priorities.map(p => {
+    const gradeIndex = GRADE_LEVELS.indexOf(p.grade);
+    const priorityClass = gradeIndex === 0 ? 'priority-urgent' : 'priority-needs';
+    return `
+  <div class="${priorityClass}">
+    <strong>[${p.grade}]</strong> ${p.section}<br>
+    <em>${p.criterion}</em><br>
+    Current evidence: ${p.evidenceCount} item(s)
+  </div>
+  `;
+  }).join('')}
+
+  <div class="action-plan">
+    <h2>Action Plan</h2>
+    <div>${parseMarkdownToHTML(actionPlan.actionPlan)}</div>
+  </div>
+  `}
+
+</body>
+</html>`;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MGTS_Action_Plan_${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+          };
+
+          if (showApiKeyPrompt) {
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+                  <div className="text-center mb-8">
+                    <img 
+                      src="mgts-logo.png"
+                      alt="MGTS Logo" 
+                      className="h-16 mx-auto mb-6"
+                    />
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Duncan</h1>
+                    <p className="text-lg text-gray-600">MGTS Ofsted Evidence Builder</p>
+                    <p className="text-sm text-gray-500 mt-2">September 2025 Inspection Toolkit | AI Inspector Technology</p>
+                  </div>
+
+                  {apiKeyError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <p className="text-red-800 font-semibold mb-2">Invalid API Key</p>
+                      <p className="text-sm text-red-700 mb-3">Please enter a valid Anthropic API key to continue.</p>
+                      <div className="text-xs text-gray-700 bg-white rounded p-3">
+                        <p className="font-semibold mb-1">How to get your API key:</p>
+                        <ol className="list-decimal ml-4 space-y-1">
+                          <li>Go to <a href="https://console.anthropic.com/" target="_blank" className="text-blue-600 underline">console.anthropic.com</a></li>
+                          <li>Sign up or log in</li>
+                          <li>Navigate to "API Keys"</li>
+                          <li>Create a new API key</li>
+                          <li>Copy and paste it below</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+                      <input
+                        type="password"
+                        value={tempApiKey}
+                        onChange={(e) => {
+                          setTempApiKey(e.target.value);
+                          setApiKeyError(false);
+                        }}
+                        onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="sk-ant-api03-..."
+                      />
+                    </div>
+                    <button
+                      onClick={handleApiKeySubmit}
+                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 font-semibold transition-colors"
+                    >
+                      Log In
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (showUserPrompt) {
+            return (
+              <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+                  <div className="text-center mb-6">
+                    <img 
+                      src="mgts-logo.png"
+                      alt="MGTS Logo" 
+                      className="h-16 mx-auto mb-4"
+                    />
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Duncan</h1>
+                    <p className="text-gray-600">Please enter your name to get started</p>
+                  </div>
+                  <input
+                    type="text"
+                    value={currentUser}
+                    onChange={(e) => setCurrentUser(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleUserSubmit()}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4"
+                    placeholder="Your name"
+                  />
+                  <button
+                    onClick={handleUserSubmit}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                  >
+                    Start
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+              <div className="max-w-7xl mx-auto p-6">
+                <div className="bg-white rounded-lg shadow-xl p-8 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        Duncan - MGTS Ofsted Evidence Builder
+                      </h1>
+                      <p className="text-gray-600">Logged in as: {currentUser} | API: {apiKey ? '✓ Connected' : '✗ Not set'}</p>
+                      {lastSaved && (
+                        <p className="text-sm text-gray-500">Last saved: {lastSaved.toLocaleTimeString()}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setShowApiKeySettings(!showApiKeySettings)} 
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                      >
+                        <LucideIcon name="settings" size={20} />
+                        API Key
+                      </button>
+                      <button onClick={exportData} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <LucideIcon name="download" size={20} />
+                        Backup
+                      </button>
+                      <label className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+                        <LucideIcon name="upload" size={20} />
+                        Import
+                        <input type="file" accept=".json" onChange={importData} className="hidden" />
+                      </label>
+                    </div>
+                  </div>
+
+                  {showApiKeySettings && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                      <h3 className="font-semibold mb-2">Update API Key</h3>
+                      <input
+                        type="password"
+                        value={tempApiKey}
+                        onChange={(e) => setTempApiKey(e.target.value)}
+                        className="w-full px-3 py-2 border rounded mb-2 font-mono text-sm"
+                        placeholder="sk-ant-api03-..."
+                      />
+                      <button
+                        onClick={handleApiKeySubmit}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                      >
+                        Update Key
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex gap-4 mb-6">
+                    <button
+                      onClick={() => setActiveView('evidence')}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeView === 'evidence' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                      <LucideIcon name="file-text" size={20} />
+                      Evidence Collection
+                    </button>
+                    <button
+                      onClick={() => { setActiveView('report'); generateSelfAssessment(); }}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeView === 'report' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                      <LucideIcon name="bar-chart-3" size={20} />
+                      Generate Report
+                    </button>
+                    <button
+                      onClick={() => { setActiveView('actionplan'); generateActionPlan(); }}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeView === 'actionplan' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                      <LucideIcon name="trending-up" size={20} />
+                      Action Plan
+                    </button>
+                  </div>
+
+                  {activeView === 'evidence' && (
+                  <>
+                  <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                    {Object.keys(OFSTED_FRAMEWORK).map(sectionKey => {
+                      const sectionGrade = getSectionGrade(sectionKey);
+                      const isSafeguarding = sectionKey === 'safeguarding';
+                      return (
+                        <button
+                          key={sectionKey}
+                          onClick={() => setActiveSection(sectionKey)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap ${
+                            activeSection === sectionKey ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          <span className={`text-xs font-semibold ${activeSection === sectionKey ? 'text-white' : getGradeTextColor(sectionGrade, isSafeguarding)}`}>
+                            {OFSTED_FRAMEWORK[sectionKey].title.split('(')[0].trim()}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {OFSTED_FRAMEWORK[activeSection].title}
+                      </h2>
+                      <GradeIndicator grade={getSectionGrade(activeSection)} isSafeguarding={activeSection === 'safeguarding'} />
+                    </div>
+
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 text-xs">
+                      <p className="font-semibold mb-1">Ofsted Grading Scale (September 2025 Toolkit):</p>
+                      {activeSection === 'safeguarding' ? (
+                        <p className="text-gray-700">Safeguarding: <span className="inline-block px-2 py-0.5 bg-green-600 text-white rounded mx-1">MET</span> or <span className="inline-block px-2 py-0.5 bg-red-600 text-white rounded mx-1">NOT MET</span></p>
+                      ) : (
+                        <p className="text-gray-700">
+                          <span className="inline-block px-2 py-0.5 bg-red-600 text-white rounded mx-1">Urgent Improvement</span>
+                          <span className="inline-block px-2 py-0.5 bg-orange-500 text-white rounded mx-1">Needs Attention</span>
+                          <span className="inline-block px-2 py-0.5 bg-green-600 text-white rounded mx-1">Expected Standard ⭐</span>
+                          <span className="inline-block px-2 py-0.5 bg-green-800 text-white rounded mx-1">Strong Standard</span>
+                          <span className="inline-block px-2 py-0.5 bg-blue-600 text-white rounded mx-1">Exceptional</span>
+                        </p>
+                      )}
+                      <p className="text-gray-600 text-xs mt-1">Using secure fit grading: section grade = lowest criterion grade</p>
+                    </div>
+
+                    {/* Render new structure with areas */}
+                    {evidenceData[activeSection]?.areas && evidenceData[activeSection].areas.map((area, areaIdx) => (
+                      <div key={areaIdx} className="mb-8">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-500">
+                          {area.areaName}
+                        </h3>
+                        
+                        {area.criteria.map((criterion, critIdx) => {
+                          const showingKey = `${activeSection}-${areaIdx}-${critIdx}`;
+                          const criterionText = OFSTED_FRAMEWORK[activeSection].gatheringEvidence[areaIdx].criteria[critIdx];
+                          
+                          return (
+                            <div key={critIdx} className="bg-white rounded-lg p-4 mb-4 shadow">
+                              <div className="flex items-start gap-3 mb-3">
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900 mb-2">{criterionText}</p>
+                                  
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-sm text-gray-600">Duncan's Grading:</span>
+                                    <GradeIndicator 
+                                      grade={criterion.suggestedGrade || (activeSection === 'safeguarding' ? "NOT MET" : "Urgent Improvement")} 
+                                      isSafeguarding={activeSection === 'safeguarding'} 
+                                    />
+                                    {criterion.confirmedGrade && (
+                                      <>
+                                        <span className="text-sm text-gray-600">→ Confirmed:</span>
+                                        <GradeIndicator 
+                                          grade={criterion.confirmedGrade} 
+                                          isSafeguarding={activeSection === 'safeguarding'} 
+                                        />
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {criterion.gradeReasoning && (
+                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3 text-sm">
+                                      <p className="font-semibold mb-1">Inspector's Assessment:</p>
+                                      <p className="text-gray-700">{criterion.gradeReasoning}</p>
+                                      {criterion.strengthsFound && (
+                                        <p className="text-green-700 mt-2"><strong>✓ Strengths:</strong> {criterion.strengthsFound}</p>
+                                      )}
+                                      {criterion.areasForImprovement && (
+                                        <p className="text-amber-700 mt-1"><strong>⚠ Areas for improvement:</strong> {criterion.areasForImprovement}</p>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-wrap gap-2 mb-3">
+                                    {activeSection === 'safeguarding' ? (
+                                      // Binary grading for safeguarding
+                                      ['MET', 'NOT MET'].map(grade => {
+                                        let buttonColor = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+                                        
+                                        if (criterion.confirmedGrade === grade) {
+                                          buttonColor = grade === 'MET' ? 'bg-green-600 text-white' : 'bg-red-600 text-white';
+                                        }
+                                        
+                                        return (
+                                          <button
+                                            key={grade}
+                                            onClick={() => confirmGrade(activeSection, areaIdx, critIdx, grade)}
+                                            className={`px-3 py-1 text-xs rounded ${buttonColor}`}
+                                          >
+                                            {grade}
+                                          </button>
+                                        );
+                                      })
+                                    ) : (
+                                      // 5-point scale for all other sections
+                                      GRADE_LEVELS.map(grade => {
+                                        const gradeIndex = GRADE_LEVELS.indexOf(grade);
+                                        let buttonColor = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+                                        
+                                        if (criterion.confirmedGrade === grade) {
+                                          if (gradeIndex === 0) buttonColor = 'bg-red-600 text-white';
+                                          else if (gradeIndex === 1) buttonColor = 'bg-orange-500 text-white';
+                                          else if (gradeIndex === 2) buttonColor = 'bg-green-600 text-white';
+                                          else if (gradeIndex === 3) buttonColor = 'bg-green-800 text-white';
+                                          else if (gradeIndex === 4) buttonColor = 'bg-blue-600 text-white';
+                                        }
+                                        
+                                        return (
+                                          <button
+                                            key={grade}
+                                            onClick={() => confirmGrade(activeSection, areaIdx, critIdx, grade)}
+                                            className={`px-3 py-1 text-xs rounded ${buttonColor}`}
+                                          >
+                                            {grade}
+                                          </button>
+                                        );
+                                      })
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => askInspectorQuestions(activeSection, areaIdx, critIdx)}
+                                    disabled={isGenerating}
+                                    className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 text-sm"
+                                  >
+                                    <LucideIcon name="help-circle" size={16} />
+                                    Ask Duncan
+                                  </button>
+                                  <button
+                                    onClick={() => gradeEvidence(activeSection, areaIdx, critIdx)}
+                                    disabled={isGenerating || criterion.evidence.length === 0}
+                                    className="flex items-center gap-2 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:bg-gray-400 text-sm"
+                                  >
+                                    <LucideIcon name="award" size={16} />
+                                    Grade
+                                  </button>
+                                  <button
+                                    onClick={() => setShowAddEvidence(showAddEvidence === showingKey ? null : showingKey)}
+                                    className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                                  >
+                                    <LucideIcon name="plus" size={16} />
+                                    Evidence
+                                  </button>
+                                </div>
+                              </div>
+
+                              {showInspectorQuestions === showingKey && inspectorQuestions && (
+                                <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-3">
+                                  <p className="font-semibold mb-2 flex items-center gap-2">
+                                    <LucideIcon name="help-circle" size={16} />
+                                    Inspector Questions:
+                                  </p>
+                                  <div className="text-sm text-gray-700 whitespace-pre-line">{inspectorQuestions.questions}</div>
+                                </div>
+                              )}
+
+                              {showAddEvidence === showingKey && (
+                                <div className="bg-gray-50 p-4 rounded-lg mb-3">
+                                  <h4 className="font-semibold mb-3">Add New Evidence</h4>
+                                  <div className="space-y-3">
+                                    <input
+                                      type="text"
+                                      placeholder="What do you do? (Brief description)"
+                                      value={newEvidence.description}
+                                      onChange={(e) => setNewEvidence({ ...newEvidence, description: e.target.value })}
+                                      className="w-full px-3 py-2 border rounded"
+                                    />
+                                    <textarea
+                                      placeholder="What evidence can you provide? (Be specific - data, documents, systems, processes)"
+                                      value={newEvidence.evidence}
+                                      onChange={(e) => setNewEvidence({ ...newEvidence, evidence: e.target.value })}
+                                      className="w-full px-3 py-2 border rounded h-24"
+                                    />
+                                    <textarea
+                                      placeholder="Links to evidence (optional - one per line)"
+                                      value={newEvidence.links}
+                                      onChange={(e) => setNewEvidence({ ...newEvidence, links: e.target.value })}
+                                      className="w-full px-3 py-2 border rounded h-20"
+                                    />
+                                    <button
+                                      onClick={() => generateProfessionalStatement(activeSection, areaIdx, critIdx)}
+                                      disabled={isGenerating}
+                                      className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+                                    >
+                                      {isGenerating ? 'Generating...' : 'Generate Professional Statement'}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {criterion.evidence.length > 0 && (
+                                <div className="space-y-2">
+                                  <p className="text-sm font-semibold text-gray-700">Evidence ({criterion.evidence.length}):</p>
+                                  {criterion.evidence.map(ev => (
+                                    <div key={ev.id} className="bg-gray-50 p-3 rounded border-l-4 border-green-500">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <p className="text-sm text-gray-700 flex-1">{ev.professionalStatement}</p>
+                                        <button
+                                          onClick={() => removeEvidence(activeSection, areaIdx, critIdx, ev.id)}
+                                          className="ml-2 text-red-600 hover:text-red-800"
+                                        >
+                                          <LucideIcon name="trash-2" size={16} />
+                                        </button>
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        Added by {ev.addedBy} on {new Date(ev.dateAdded).toLocaleDateString()}
+                                      </div>
+                                      {ev.links && ev.links.length > 0 && (
+                                        <div className="mt-2 text-xs">
+                                          <p className="font-semibold text-gray-600">Links:</p>
+                                          {ev.links.map((link, i) => (
+                                            <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline block">
+                                              {link}
+                                            </a>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+
+                    {/* Render old structure with flat criteria (backwards compatibility) */}
+                    {evidenceData[activeSection]?.criteria && !evidenceData[activeSection]?.areas && evidenceData[activeSection].criteria.map((criterion, idx) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 mb-4 shadow">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 mb-2">{criterion.criterion}</p>
+                            
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-sm text-gray-600">Duncan's Grading:</span>
+                              <GradeIndicator 
+                                grade={criterion.suggestedGrade || (activeSection === 'safeguarding' ? "NOT MET" : "Urgent Improvement")} 
+                                isSafeguarding={activeSection === 'safeguarding'} 
+                              />
+                              {criterion.confirmedGrade && (
+                                <>
+                                  <span className="text-sm text-gray-600">→ Confirmed:</span>
+                                  <GradeIndicator 
+                                    grade={criterion.confirmedGrade} 
+                                    isSafeguarding={activeSection === 'safeguarding'} 
+                                  />
+                                </>
+                              )}
+                            </div>
+
+                            {criterion.gradeReasoning && (
+                              <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3 text-sm">
+                                <p className="font-semibold mb-1">Inspector's Assessment:</p>
+                                <p className="text-gray-700">{criterion.gradeReasoning}</p>
+                                {criterion.strengthsFound && (
+                                  <p className="text-green-700 mt-2"><strong>✓ Strengths:</strong> {criterion.strengthsFound}</p>
+                                )}
+                                {criterion.areasForImprovement && (
+                                  <p className="text-amber-700 mt-1"><strong>⚠ Areas for improvement:</strong> {criterion.areasForImprovement}</p>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {activeSection === 'safeguarding' ? (
+                                // Binary grading for safeguarding
+                                ['MET', 'NOT MET'].map(grade => {
+                                  let buttonColor = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+                                  
+                                  if (criterion.confirmedGrade === grade) {
+                                    buttonColor = grade === 'MET' ? 'bg-green-600 text-white' : 'bg-red-600 text-white';
+                                  }
+                                  
+                                  return (
+                                    <button
+                                      key={grade}
+                                      onClick={() => confirmGrade(activeSection, 0, idx, grade)}
+                                      className={`px-3 py-1 text-xs rounded ${buttonColor}`}
+                                    >
+                                      {grade}
+                                    </button>
+                                  );
+                                })
+                              ) : (
+                                // 5-point scale for all other sections
+                                GRADE_LEVELS.map(grade => {
+                                  const gradeIndex = GRADE_LEVELS.indexOf(grade);
+                                  let buttonColor = 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+                                  
+                                  if (criterion.confirmedGrade === grade) {
+                                    if (gradeIndex === 0) buttonColor = 'bg-red-600 text-white';
+                                    else if (gradeIndex === 1) buttonColor = 'bg-orange-500 text-white';
+                                    else if (gradeIndex === 2) buttonColor = 'bg-green-600 text-white';
+                                    else if (gradeIndex === 3) buttonColor = 'bg-green-800 text-white';
+                                    else if (gradeIndex === 4) buttonColor = 'bg-blue-600 text-white';
+                                  }
+                                  
+                                  return (
+                                    <button
+                                      key={grade}
+                                      onClick={() => confirmGrade(activeSection, 0, idx, grade)}
+                                      className={`px-3 py-1 text-xs rounded ${buttonColor}`}
+                                    >
+                                      {grade}
+                                    </button>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => askInspectorQuestions(activeSection, 0, idx)}
+                              disabled={isGenerating}
+                              className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 text-sm"
+                            >
+                              <LucideIcon name="help-circle" size={16} />
+                              Ask Duncan
+                            </button>
+                            <button
+                              onClick={() => gradeEvidence(activeSection, 0, idx)}
+                              disabled={isGenerating || criterion.evidence.length === 0}
+                              className="flex items-center gap-2 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:bg-gray-400 text-sm"
+                            >
+                              <LucideIcon name="award" size={16} />
+                              Grade
+                            </button>
+                            <button
+                              onClick={() => setShowAddEvidence(showAddEvidence === idx ? null : idx)}
+                              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                            >
+                              <LucideIcon name="plus" size={16} />
+                              Evidence
+                            </button>
+                          </div>
+                        </div>
+
+                        {showInspectorQuestions === `${activeSection}-0-${idx}` && inspectorQuestions && (
+                          <div className="bg-purple-50 border-l-4 border-purple-500 p-4 mb-3">
+                            <p className="font-semibold mb-2 flex items-center gap-2">
+                              <LucideIcon name="help-circle" size={16} />
+                              Inspector Questions:
+                            </p>
+                            <div className="text-sm text-gray-700 whitespace-pre-line">
+                              {inspectorQuestions.questions}
+                            </div>
+                          </div>
+                        )}
+
+                        {criterion.evidence.map((ev) => (
+                          <div key={ev.id} className="bg-blue-50 rounded p-3 mb-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-700 mb-2">{ev.professionalStatement}</p>
+                                <div className="text-xs text-gray-500">
+                                  Added by {ev.addedBy} on {new Date(ev.dateAdded).toLocaleDateString()}
+                                </div>
+                                {ev.links.length > 0 && (
+                                  <div className="mt-2">
+                                    {ev.links.map((link, i) => (
+                                      <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-xs block">
+                                        {link}
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => removeEvidence(activeSection, 0, idx, ev.id)}
+                                className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex-shrink-0"
+                                title="Remove this evidence"
+                              >
+                                <LucideIcon name="trash-2" size={14} />
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {showAddEvidence === idx && (
+                          <div className="bg-gray-50 rounded-lg p-4 mt-3">
+                            <textarea
+                              value={newEvidence.description}
+                              onChange={(e) => setNewEvidence({...newEvidence, description: e.target.value})}
+                              placeholder="What do we do? (brief description)"
+                              className="w-full px-3 py-2 border rounded mb-2"
+                              rows="2"
+                            />
+                            <textarea
+                              value={newEvidence.evidence}
+                              onChange={(e) => setNewEvidence({...newEvidence, evidence: e.target.value})}
+                              placeholder="Evidence (documents, data, outcomes)"
+                              className="w-full px-3 py-2 border rounded mb-2"
+                              rows="3"
+                            />
+                            <textarea
+                              value={newEvidence.links}
+                              onChange={(e) => setNewEvidence({...newEvidence, links: e.target.value})}
+                              placeholder="Links (one per line)"
+                              className="w-full px-3 py-2 border rounded mb-3"
+                              rows="2"
+                            />
+                            <button
+                              onClick={() => generateProfessionalStatement(activeSection, 0, idx)}
+                              disabled={isGenerating}
+                              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+                            >
+                              {isGenerating ? (
+                                <>
+                                  <LucideIcon name="loader" size={20} className="animate-spin" />
+                                  Processing...
+                                </>
+                              ) : (
+                                <>
+                                  <LucideIcon name="sparkles" size={20} />
+                                  Generate & Grade
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  </>
+                  )}
+
+                  {activeView === 'report' && (
+                    <div className="bg-white rounded-lg">
+                      {isGenerating && (
+                        <div className="flex items-center justify-center py-12">
+                          <div className="text-center">
+                            <LucideIcon name="loader" size={48} className="animate-spin mx-auto mb-4 text-blue-600" />
+                            <p className="text-lg text-gray-600">Generating self-assessment report...</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {generatedReport && !isGenerating && (
+                        <div>
+                          <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Self-Assessment Report</h2>
+                            <button
+                              onClick={exportReportToPDF}
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              <LucideIcon name="download" size={20} />
+                              Export Report
+                            </button>
+                          </div>
+
+                          <div className="bg-blue-50 rounded-lg p-6 mb-6">
+                            <h3 className="text-xl font-bold mb-4">Executive Summary</h3>
+                            <div className="text-gray-800 whitespace-pre-line">{generatedReport.executiveSummary}</div>
+                          </div>
+
+                          {Object.keys(generatedReport.sections).map(sectionKey => {
+                            const section = generatedReport.sections[sectionKey];
+                            const isSafeguarding = sectionKey === 'safeguarding';
+                            return (
+                              <div key={sectionKey} className="bg-gray-50 rounded-lg p-6 mb-4">
+                                <h3 className="text-xl font-bold mb-2">
+                                  {section.title}
+                                  <span className={`ml-3 px-3 py-1 ${getGradeColor(section.grade, isSafeguarding)} text-white rounded text-sm`}>
+                                    {section.grade}
+                                  </span>
+                                </h3>
+                                <div className="text-gray-800 whitespace-pre-line">{section.narrative}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeView === 'actionplan' && (
+                    <div className="bg-white rounded-lg">
+                      {isGenerating && (
+                        <div className="flex items-center justify-center py-12">
+                          <div className="text-center">
+                            <LucideIcon name="loader" size={48} className="animate-spin mx-auto mb-4 text-blue-600" />
+                            <p className="text-lg text-gray-600">Generating action plan...</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {actionPlan && !isGenerating && (
+                        <div>
+                          <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Ofsted Readiness Action Plan</h2>
+                            <button
+                              onClick={exportActionPlan}
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              <LucideIcon name="download" size={20} />
+                              Export Action Plan
+                            </button>
+                          </div>
+
+                          {actionPlan.message ? (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                              <p className="text-green-800">{actionPlan.message}</p>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="bg-blue-50 rounded-lg p-6 mb-6">
+                                <h3 className="text-xl font-bold mb-4">Priority Summary</h3>
+                                <p className="mb-4">The following {actionPlan.priorities.length} criteria require attention:</p>
+                                <div className="space-y-2">
+                                  {actionPlan.priorities.map((p, i) => {
+                                    const gradeIndex = GRADE_LEVELS.indexOf(p.grade);
+                                    let colorClass = 'bg-orange-50 border-orange-500';
+                                    if (gradeIndex === 0) colorClass = 'bg-red-50 border-red-600';
+                                    else if (gradeIndex === 1) colorClass = 'bg-orange-50 border-orange-500';
+                                    
+                                    return (
+                                      <div key={i} className={`p-3 rounded border-l-4 ${colorClass}`}>
+                                        <div className="font-semibold">[{p.grade}] {p.section}</div>
+                                        <div className="text-sm text-gray-700">{p.criterion}</div>
+                                        <div className="text-xs text-gray-500 mt-1">Current evidence: {p.evidenceCount} item(s)</div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="bg-gray-50 rounded-lg p-6">
+                                <h3 className="text-xl font-bold mb-4">Recommended Actions</h3>
+                                <div className="text-gray-800 whitespace-pre-line">
+                                  {actionPlan.actionPlan}
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        ReactDOM.render(<OfstedEvidenceBuilder />, document.getElementById('root'));
+    </script>
+</body>
+</html>
